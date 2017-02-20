@@ -1,0 +1,135 @@
+from sqlalchemy import Table, Column, Integer, String, DateTime, ForeignKey, Text, BLOB
+from sqlalchemy.dialects.postgresql import JSONB
+
+
+def schema_define(meta_data):
+    """Define database schema"""
+
+    data_connection_types = Table("data_connection_types", meta_data,
+                                  Column("id", Integer, primary_key=True),
+                                  Column("parent_id", ForeignKey("data_connection_types.id")),
+                                  Column("name", String(255)))
+
+    data_connections = Table("data_connections", meta_data,
+                             Column("id", Integer, primary_key=True),
+                             Column("name", String(255)),
+                             Column("data_connection_type", ForeignKey("data_connection_types.id")))
+
+    data_sources = Table("data_sources", meta_data,
+                         Column("id", Integer, primary_key=True),
+                         Column("name", String(255)),
+                         Column("data_connection_id", ForeignKey("data_connections.id")))
+
+    query_templates = Table("query_templates", meta_data,
+                            Column("id", Integer, primary_key=True),
+                            Column("name", String(255)),
+                            Column("template", Text),
+                            Column("parameter_list", JSONB))
+
+    item_classes = Table("item_classes", meta_data,
+                         Column("id", Integer, primary_key=True),
+                         Column("name", String(255)),
+                         Column("data_source_id", ForeignKey("data_sources.id")))
+
+    states=Table("states", meta_data,
+                     Column("id", Integer, primary_key=True),
+                     Column("name", String(255)))
+
+    actions = Table("actions", meta_data,
+                           Column("id", Integer, primary_key=True),
+                           Column("name", String(255)))
+
+    transition_state_item_classes = Table("transition_state_item_classes", meta_data,
+                                           Column("id", Integer, primary_key=True),
+                                           Column("from_state_id", ForeignKey("states.id")),
+                                           Column("to_state_id", ForeignKey("states.id")),
+                                           Column("item_class_id", ForeignKey("item_classes.id")),
+                                           Column("action_id", ForeignKey("actions.id")),
+                                           Column("query_template_id", ForeignKey("query_templates.id")),
+                                           Column("transition_to_state_in_seconds", Integer),
+                                           Column("parameters", JSONB))
+
+    track_items = Table("track_items", meta_data,
+                        Column("id", Integer, primary_key=True),
+                        Column("item_class_id", ForeignKey("item_classes.id")),
+                        Column("state_id", ForeignKey("states.id")),
+                        Column("transaction_id", String(255)),
+                        Column("created_at", DateTime),
+                        Column("updated_at", DateTime))
+
+
+    track_item_updates = Table("track_item_updates", meta_data,
+                               Column("id", Integer, primary_key=True),
+                               Column("track_item_id", ForeignKey("track_items.id")),
+                               Column("state_id", ForeignKey("states.id")),
+                               Column("created_at", DateTime))
+
+    data_item_classes = Table("data_item_classes", meta_data,
+                              Column("id", Integer, primary_key=True),
+                              Column("name", String(255)))
+
+    data_item_classes_actions = Table("data_item_class_actions", meta_data,
+                                      Column("id", Integer, primary_key=True),
+                                      Column("action_id", ForeignKey("actions.id")),
+                                      Column("data_item_class_id", ForeignKey("data_item_classes.id")),
+                                      Column("query_template_id", ForeignKey("query_templates.id")),
+                                      Column("parameters", JSONB))
+
+    item_data_item_classes_actions = Table("item_data_item_classes_actions", meta_data,
+                                           Column("id", Integer, primary_key=True),
+                                           Column("data_item_class_action_id", ForeignKey("data_item_class_actions.id")),
+                                           Column("item_class_id", ForeignKey("item_classes.id")))
+
+    data_item_type = Table("data_item_types", meta_data,
+                           Column("id", Integer, primary_key=True),
+                           Column("name", String(255)))
+
+    data_items = Table("data_items", meta_data,
+                       Column("id", Integer, primary_key=True),
+                       Column("data", JSONB),
+                       Column("text", Text),
+                       Column("base64_binary_file_content", Text),
+                       Column("data_item_class_id", ForeignKey("data_item_classes.id")),
+                       Column("data_item_type_id", ForeignKey("data_item_types.id")),
+                       Column("track_item_update_id", ForeignKey("track_item_updates.id")),
+                       Column("created_at", DateTime))
+
+    return meta_data
+
+
+def get_table_names_without_schema(meta):
+    table_dict = {}
+    for full_table_name in meta.tables:
+        if meta.schema is not None:
+            schema, table_name = full_table_name.split(".")
+            table_dict[table_name] = full_table_name
+        else:
+            table_dict[full_table_name] = full_table_name
+    return table_dict
+
+
+def populate_reference_table(table_name, meta, connection, list_of_values):
+    table_obj = meta.tables[table_name]
+
+    for tuple_value in list_of_values:
+        connection.execute(table_obj.insert(tuple_value))
+
+
+def create_and_populate_schema(meta_data, connection):
+    meta_data = schema_define(meta_data)
+    meta_data.drop_all()
+    meta_data.create_all(checkfirst=True)
+
+    table_dict = get_table_names_without_schema(meta_data)
+
+    data_item_types = [(1, "JSON"), (2, "Text"), (3, "Base64")]
+    populate_reference_table(table_dict["data_item_types"], meta_data, connection, data_item_types)
+
+    states = [(1, "Start"), (2, "Stop"), (3, "Watch"), (4, "Archive")]
+    populate_reference_table(table_dict["states"], meta_data, connection, states)
+
+    data_connection_types = [(1, None, "Relational database"), (2, 1, "SQLite"), (3, 1, "PostGreSQL")]
+    populate_reference_table(table_dict["data_connection_types"], meta_data, connection,  data_connection_types)
+
+
+
