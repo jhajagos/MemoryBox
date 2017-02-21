@@ -3,7 +3,7 @@ import json
 import schema_define
 import sqlalchemy as sa
 
-class TestBuildSchema(unittest.TestCase):
+class TestLoadMemoryBox(unittest.TestCase):
 
     def setUp(self):
         with open("testing_config.json", "r") as f:

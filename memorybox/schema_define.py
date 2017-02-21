@@ -1,4 +1,4 @@
-from sqlalchemy import Table, Column, Integer, String, DateTime, ForeignKey, Text, BLOB
+from sqlalchemy import Table, Column, Integer, String, DateTime, ForeignKey, Text
 from sqlalchemy.dialects.postgresql import JSONB
 
 
@@ -15,7 +15,7 @@ def schema_define(meta_data):
                              Column("name", String(255)),
                              Column("data_connection_type", ForeignKey("data_connection_types.id")))
 
-    data_sources = Table("data_sources", meta_data,
+    memory_boxes = Table("memory_boxes", meta_data,
                          Column("id", Integer, primary_key=True),
                          Column("name", String(255)),
                          Column("data_connection_id", ForeignKey("data_connections.id")))
@@ -29,7 +29,7 @@ def schema_define(meta_data):
     item_classes = Table("item_classes", meta_data,
                          Column("id", Integer, primary_key=True),
                          Column("name", String(255)),
-                         Column("data_source_id", ForeignKey("data_sources.id")))
+                         Column("memory_box_id", ForeignKey("memory_boxes.id")))
 
     states=Table("states", meta_data,
                      Column("id", Integer, primary_key=True),
@@ -131,5 +131,7 @@ def create_and_populate_schema(meta_data, connection):
     data_connection_types = [(1, None, "Relational database"), (2, 1, "SQLite"), (3, 1, "PostGreSQL")]
     populate_reference_table(table_dict["data_connection_types"], meta_data, connection,  data_connection_types)
 
+    actions = [(1, "Pass"), (2, "Update")]
+    populate_reference_table((table_dict["actions"], meta_data, connection, actions))
 
 
