@@ -11,12 +11,19 @@
                 "name": "encounter",
                 "actions": [],
                 "actions_transitions": []
+              },
+              {
+                "name": "diagnoses",
+                "actions": [{"update": ""}],
+                "actions_transitions": []
               }
             ]
           },
-          "transitions": []
+          "transitions": [
+            {"transition": [null, "New"], "action": "get_new_discharges"}
+          ]
         }
     ]
   },
-  "query_templates": {}
+  "query_templates": [{"name": "encounters", "query": "select * from encounters where discharge_date"}]
 }

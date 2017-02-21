@@ -1,0 +1,7 @@
+{
+    "connection_uri": "postgresql+psycopg2://postgres:password@localhost/postgres",
+    "db_schema": "memorybox",
+    "root_file_path": "./test/",
+    "data_connections":
+        {"encounters": "sqlite3:///./files/encounters.db3"}
+}
