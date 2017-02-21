@@ -3,6 +3,7 @@ import json
 import schema_define
 import sqlalchemy as sa
 
+
 class TestLoadMemoryBox(unittest.TestCase):
 
     def setUp(self):

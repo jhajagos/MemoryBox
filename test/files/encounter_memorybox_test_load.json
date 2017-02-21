@@ -1,0 +1,22 @@
+{
+  "data_connections": {},
+  "name": "encounter",
+  "items": {
+    "classes": [
+      {
+        "name": "discharges",
+        "data_items": {
+            "classes": [
+              {
+                "name": "encounter",
+                "actions": [],
+                "actions_transitions": []
+              }
+            ]
+          },
+          "transitions": []
+        }
+    ]
+  },
+  "query_templates": {}
+}

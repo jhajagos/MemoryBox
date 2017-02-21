@@ -8,16 +8,16 @@ def schema_define(meta_data):
     data_connection_types = Table("data_connection_types", meta_data,
                                   Column("id", Integer, primary_key=True),
                                   Column("parent_id", ForeignKey("data_connection_types.id")),
-                                  Column("name", String(255)))
+                                  Column("name", String(255), unique=True))
 
     data_connections = Table("data_connections", meta_data,
                              Column("id", Integer, primary_key=True),
-                             Column("name", String(255)),
+                             Column("name", String(255), unique=True),
                              Column("data_connection_type", ForeignKey("data_connection_types.id")))
 
     memory_boxes = Table("memory_boxes", meta_data,
                          Column("id", Integer, primary_key=True),
-                         Column("name", String(255)),
+                         Column("name", String(255), unique=True),
                          Column("data_connection_id", ForeignKey("data_connections.id")))
 
     query_templates = Table("query_templates", meta_data,
@@ -75,14 +75,14 @@ def schema_define(meta_data):
                                       Column("query_template_id", ForeignKey("query_templates.id")),
                                       Column("parameters", JSONB))
 
-    item_data_item_classes_actions = Table("item_data_item_classes_actions", meta_data,
+    data_item_actions_transitions_state_items = Table("data_item_actions_transition_state_items", meta_data,
                                            Column("id", Integer, primary_key=True),
                                            Column("data_item_class_action_id", ForeignKey("data_item_class_actions.id")),
-                                           Column("item_class_id", ForeignKey("item_classes.id")))
+                                           Column("transition_state_item_class_id", ForeignKey("transition_state_item_classes.id")))
 
     data_item_type = Table("data_item_types", meta_data,
                            Column("id", Integer, primary_key=True),
-                           Column("name", String(255)))
+                           Column("name", String(255), unique=True))
 
     data_items = Table("data_items", meta_data,
                        Column("id", Integer, primary_key=True),
@@ -118,6 +118,7 @@ def populate_reference_table(table_name, meta, connection, list_of_values):
 def create_and_populate_schema(meta_data, connection):
     meta_data = schema_define(meta_data)
     meta_data.drop_all()
+
     meta_data.create_all(checkfirst=True)
 
     table_dict = get_table_names_without_schema(meta_data)
@@ -132,6 +133,6 @@ def create_and_populate_schema(meta_data, connection):
     populate_reference_table(table_dict["data_connection_types"], meta_data, connection,  data_connection_types)
 
     actions = [(1, "Pass"), (2, "Update")]
-    populate_reference_table((table_dict["actions"], meta_data, connection, actions))
+    populate_reference_table(table_dict["actions"], meta_data, connection, actions)
 
 
