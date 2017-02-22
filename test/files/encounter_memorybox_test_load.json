@@ -25,5 +25,5 @@
         }
     ]
   },
-  "query_templates": [{"name": "encounters", "query": "select * from encounters where discharge_date"}]
+  "query_templates": [{"name": "encounters", "query": "select * from encounters where discharge_date >= :start_discharge_date and discharge_date < :end_discharge_date"}]
 }

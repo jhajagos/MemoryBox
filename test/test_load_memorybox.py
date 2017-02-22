@@ -2,7 +2,7 @@ import unittest
 import json
 import schema_define
 import sqlalchemy as sa
-
+from test_utilities import load_csv_into_database
 
 class TestLoadMemoryBox(unittest.TestCase):
 
