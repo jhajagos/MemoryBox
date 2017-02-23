@@ -73,6 +73,11 @@
   },
   "query_templates": [
     {
+      "name": "discharge_query",
+      "template": "select encounter_id as transaction_id from encounters where discharge_date is not null and discharge_date >= :lower_discharge_date and discharge_date < :upper_discharge_date",
+      "parameters": ["lower_discharge_date", "upper_discharge_date"]
+    },
+    {
       "name": "encounter_detail_query",
       "template": "select * from encounters = :encounter_id",
       "parameter_list": ["encounter_id"]

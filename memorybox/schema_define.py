@@ -22,22 +22,22 @@ def schema_define(meta_data):
 
     query_templates = Table("query_templates", meta_data,
                             Column("id", Integer, primary_key=True),
-                            Column("name", String(255)),
+                            Column("name", String(255), unique=True),
                             Column("template", Text),
                             Column("parameter_list", JSONB))
 
     item_classes = Table("item_classes", meta_data,
                          Column("id", Integer, primary_key=True),
-                         Column("name", String(255)),
+                         Column("name", String(255), unique=True),
                          Column("memory_box_id", ForeignKey("memory_boxes.id")))
 
     states=Table("states", meta_data,
                      Column("id", Integer, primary_key=True),
-                     Column("name", String(255)))
+                     Column("name", String(255), unique=True))
 
     actions = Table("actions", meta_data,
                            Column("id", Integer, primary_key=True),
-                           Column("name", String(255)))
+                           Column("name", String(255), unique=True))
 
     transition_state_item_classes = Table("transition_state_item_classes", meta_data,
                                            Column("id", Integer, primary_key=True),
@@ -65,7 +65,7 @@ def schema_define(meta_data):
 
     data_item_classes = Table("data_item_classes", meta_data,
                               Column("id", Integer, primary_key=True),
-                              Column("name", String(255)))
+                              Column("name", String(255), unique=True))
 
     data_item_classes_actions = Table("data_item_class_actions", meta_data,
                                       Column("id", Integer, primary_key=True),
