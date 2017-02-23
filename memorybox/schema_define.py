@@ -44,10 +44,10 @@ def schema_define(meta_data):
                                            Column("from_state_id", ForeignKey("states.id")),
                                            Column("to_state_id", ForeignKey("states.id")),
                                            Column("item_class_id", ForeignKey("item_classes.id")),
-                                           Column("action_id", ForeignKey("actions.id")),
                                            Column("query_template_id", ForeignKey("query_templates.id")),
-                                           Column("transition_to_state_in_seconds", Integer),
-                                           Column("parameters", JSONB))
+                                           Column("parameters", JSONB),
+                                           Column("defaults", JSONB)
+                                          )
 
     track_items = Table("track_items", meta_data,
                         Column("id", Integer, primary_key=True),
@@ -56,7 +56,6 @@ def schema_define(meta_data):
                         Column("transaction_id", String(255)),
                         Column("created_at", DateTime),
                         Column("updated_at", DateTime))
-
 
     track_item_updates = Table("track_item_updates", meta_data,
                                Column("id", Integer, primary_key=True),
@@ -132,7 +131,7 @@ def create_and_populate_schema(meta_data, connection):
     data_connection_types = [(1, None, "Relational database"), (2, 1, "SQLite"), (3, 1, "PostGreSQL")]
     populate_reference_table(table_dict["data_connection_types"], meta_data, connection,  data_connection_types)
 
-    actions = [(1, "Pass"), (2, "Update")]
+    actions = [(1, "Pass"), (2, "Insert")]
     populate_reference_table(table_dict["actions"], meta_data, connection, actions)
 
 

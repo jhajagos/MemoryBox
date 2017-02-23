@@ -66,3 +66,73 @@ class DBClassName(DBClass):
 
     def _insert_name(self, name):
         self.connection.execute(self.table_obj.insert({"name": name}))
+
+
+class Actions(DBClass):
+    def _table_name(self):
+        return "actions"
+
+
+class States(DBClass):
+    def _table_name(self):
+        return "states"
+
+
+class DataConnectionTypes(DBClass):
+    def _table_name(self):
+        return "data_connection_types"
+
+
+class DataConnections(DBClass):
+    def _table_name(self):
+        return "data_connections"
+
+
+class ItemClasses(DBClass):
+    def _table_name(self):
+        return "item_classes"
+
+
+class MemoryBoxes(DBClass):
+    def _table_name(self):
+        return "memory_boxes"
+
+
+class DataItems(DBClass):
+    def _table_name(self):
+        return "data_items"
+
+
+class DataItemTypes(DBClass):
+    def _table_name(self):
+        return "data_item_types"
+
+
+class DataItemActionTransitionStateItems(DBClass):
+    def _table_name(self):
+        return "data_item_action_transition_state_items"
+
+
+class DataItemClassActions(DBClass):
+    def _table_name(self):
+        return "data_item_class_actions"
+
+
+class TransitionStateItemClasses(DBClass):
+    def _table_name(self):
+        return "transition_state_item_classes"
+
+
+class TrackItems(DBClass):
+    def _table_name(self):
+        return "track_items"
+
+
+class TrackItemUpdates(DBClass):
+    def _table_name(self):
+        return "track_item_updates"
+
+
+class QueryTemplates(DBClass):
+    def _table_name(self):
+        return "query_templates"
