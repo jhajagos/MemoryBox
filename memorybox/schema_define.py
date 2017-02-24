@@ -64,9 +64,14 @@ def schema_define(meta_data):
                                Column("state_id", ForeignKey("states.id")),
                                Column("created_at", DateTime))
 
+    data_item_type = Table("data_item_types", meta_data,
+                           Column("id", Integer, primary_key=True),
+                           Column("name", String(255), unique=True))
+
     data_item_classes = Table("data_item_classes", meta_data,
                               Column("id", Integer, primary_key=True),
-                              Column("name", String(255), unique=True))
+                              Column("name", String(255), unique=True),
+                              Column("data_item_type_id", ForeignKey("data_item_types.id")))
 
     data_item_classes_actions = Table("data_item_class_actions", meta_data,
                                       Column("id", Integer, primary_key=True),
@@ -80,9 +85,7 @@ def schema_define(meta_data):
                                            Column("data_item_class_action_id", ForeignKey("data_item_class_actions.id")),
                                            Column("transition_state_item_class_id", ForeignKey("transition_state_item_classes.id")))
 
-    data_item_type = Table("data_item_types", meta_data,
-                           Column("id", Integer, primary_key=True),
-                           Column("name", String(255), unique=True))
+
 
     data_items = Table("data_items", meta_data,
                        Column("id", Integer, primary_key=True),

@@ -61,7 +61,7 @@
               "actions": [
                 {
                   "name": "Insert",
-                  "query_template": "encounter_docuement_query",
+                  "query_template": "encounter_document_query",
                   "parameters": {}
                 }
               ]

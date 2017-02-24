@@ -43,25 +43,51 @@ class MemoryBoxLoader(object):
             memory_box_name = self.struct_dict["name"]
             memory_box_obj = MemoryBoxes(self.connection, self.meta_data)
             memory_box_id = memory_box_obj.insert_struct({"name": memory_box_name, "data_connection_id": data_connection_id})
-
+            action_obj = Actions(self.connection, self.meta_data)
             # items
             if "items" not in self.struct_dict:
                 raise RuntimeError, "Configuration must contain 'items'"
             else:
-                items = self.struct_dict["items"]
+                items = self.struct_dict["items"]["classes"]
 
-                # Add data_items
-                if "data_items" in items:
-                    data_items_obj = DataItems(self.connection, self.meta_data)
+                for item in items:
+                    # Add data_items
+                    if "data_items" in item:
+                        data_item_class_obj = DataItemClasses(self.connection, self.meta_data)
+                        data_item_type_obj = DataItemTypes(self.connection, self.meta_data)
+                        data_items = item["data_items"]
+                        data_item_classes = data_items["classes"]
 
-                    # Add data_item_actions
+                        for data_item_class in data_item_classes:
 
-                # Add items
-                if "classes" in items:
-                    item_classes = items["classes"]
+                            data_item_class_name = data_item_class["name"]
+                            data_item_class_type_name = data_item_class["data_type"]
 
-                     # Add item transitions
+                            data_item_class_dict = {"data_item_type_id": data_item_type_obj.find_one(data_item_class_type_name).id,
+                                                    "name": data_item_class_name}
 
-                        # Add item transitions which have data item actions
+                            data_item_class_id = data_item_class_obj.insert_struct(data_item_class_dict)
 
-        pass
+                            # Add data_item_actions
+                            data_item_class_action_obj = DataItemClassActions(self.connection, self.meta_data)
+                            if "actions" in data_item_class:
+                                data_item_actions = data_item_class["actions"]
+                                for data_item_action in data_item_actions:
+                                    query_template_id = query_template_obj.find_one(data_item_action["query_template"]).id
+                                    name = data_item_action["name"]
+                                    parameters = data_item_action["parameters"]
+                                    action_id = action_obj.find_one(name).id
+
+                                    data_item_action_dict = {"parameters": parameters,
+                                                             "action_id": action_id,
+                                                             "query_template_id": query_template_id,
+                                                             "data_item_class_id": data_item_class_id}
+
+                                    data_item_class_action_obj.insert_struct(data_item_action_dict)
+
+
+                        # Add item
+
+                            # Add item transitions
+
+                            # Add item transitions which have data item actions

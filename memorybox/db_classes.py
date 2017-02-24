@@ -107,6 +107,9 @@ class DataItems(DBClass):
     def _table_name(self):
         return "data_items"
 
+class DataItemClasses(DBClass):
+    def _table_name(self):
+        return "data_item_classes"
 
 class DataItemTypes(DBClass):
     def _table_name(self):
