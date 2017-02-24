@@ -42,19 +42,26 @@ class MemoryBoxLoader(object):
         else:
             memory_box_name = self.struct_dict["name"]
             memory_box_obj = MemoryBoxes(self.connection, self.meta_data)
-            memory_box_obj.insert_struct({"name": memory_box_name, "data_connection_id": data_connection_id})
+            memory_box_id = memory_box_obj.insert_struct({"name": memory_box_name, "data_connection_id": data_connection_id})
 
-
-
-
-            # Add items
+            # items
+            if "items" not in self.struct_dict:
+                raise RuntimeError, "Configuration must contain 'items'"
+            else:
+                items = self.struct_dict["items"]
 
                 # Add data_items
+                if "data_items" in items:
+                    data_items_obj = DataItems(self.connection, self.meta_data)
 
                     # Add data_item_actions
 
-                # Add item transitions
+                # Add items
+                if "classes" in items:
+                    item_classes = items["classes"]
 
-                    # Add item transitions which have data item actions
+                     # Add item transitions
+
+                        # Add item transitions which have data item actions
 
         pass
