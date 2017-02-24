@@ -129,7 +129,7 @@ def create_and_populate_schema(meta_data, connection):
     data_item_types = [(1, "JSON"), (2, "Text"), (3, "Base64")]
     populate_reference_table(table_dict["data_item_types"], meta_data, connection, data_item_types)
 
-    states = [(1, "Start"), (2, "Stop"), (3, "Watch"), (4, "Archive")]
+    states = [(1, "Start"), (2, "Stop"), (3, "Watch"), (4, "Archive"), (5, "New")]
     populate_reference_table(table_dict["states"], meta_data, connection, states)
 
     data_connection_types = [(1, None, "Relational database"), (2, 1, "SQLite"), (3, 1, "PostGreSQL")]

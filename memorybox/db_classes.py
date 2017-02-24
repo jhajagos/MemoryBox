@@ -31,7 +31,12 @@ class DBClass(object):
     def find_one(self, value_string, field_name="name"):
         sql_expr = self.table_obj.select().where(self.table_obj.c[field_name] == value_string)
         cursor = self.connection.execute(sql_expr)
-        return list(cursor)[0]
+
+        result_list = list(cursor)
+        if len(result_list):
+            return result_list[0]
+        else:
+            return None
 
 
 class DBClassName(DBClass):
@@ -116,9 +121,9 @@ class DataItemTypes(DBClass):
         return "data_item_types"
 
 
-class DataItemActionTransitionStateItems(DBClass):
+class DataItemActionsTransitionStateItems(DBClass):
     def _table_name(self):
-        return "data_item_action_transition_state_items"
+        return "data_item_actions_transition_state_items"
 
 
 class DataItemClassActions(DBClass):

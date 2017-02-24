@@ -19,7 +19,7 @@
             "defaults": {},
             "actions": [
               {"name": "Insert",
-               "data_item": "encounter_details"
+               "data_item_class": "encounter_detail"
               }
             ]
           }
