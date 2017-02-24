@@ -13,7 +13,7 @@ def schema_define(meta_data):
     data_connections = Table("data_connections", meta_data,
                              Column("id", Integer, primary_key=True),
                              Column("name", String(255), unique=True),
-                             Column("data_connection_type", ForeignKey("data_connection_types.id")))
+                             Column("data_connection_type_id", ForeignKey("data_connection_types.id")))
 
     memory_boxes = Table("memory_boxes", meta_data,
                          Column("id", Integer, primary_key=True),
@@ -43,6 +43,7 @@ def schema_define(meta_data):
                                            Column("id", Integer, primary_key=True),
                                            Column("from_state_id", ForeignKey("states.id")),
                                            Column("to_state_id", ForeignKey("states.id")),
+                                           Column("action_id", ForeignKey("actions.id")),
                                            Column("item_class_id", ForeignKey("item_classes.id")),
                                            Column("query_template_id", ForeignKey("query_templates.id")),
                                            Column("parameters", JSONB),
@@ -131,7 +132,7 @@ def create_and_populate_schema(meta_data, connection):
     data_connection_types = [(1, None, "Relational database"), (2, 1, "SQLite"), (3, 1, "PostGreSQL")]
     populate_reference_table(table_dict["data_connection_types"], meta_data, connection,  data_connection_types)
 
-    actions = [(1, "Pass"), (2, "Insert")]
+    actions = [(1, "Pass"), (2, "Insert"), (3, "Insert new")]
     populate_reference_table(table_dict["actions"], meta_data, connection, actions)
 
 

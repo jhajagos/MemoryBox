@@ -1,10 +1,9 @@
 {
-  "data_connections": [
-    {
+  "data_connection": 
+  {
       "name": "ehr_warehouse",
       "data_connection_type": "SQLite"
-    }
-  ],
+  },
   "name": "encounter",
   "items": {
     "classes": [
@@ -14,7 +13,8 @@
           {
             "from": null,
             "to": "New",
-            "query_template": "",
+            "query_template": "discharge_query",
+            "action": "Insert new",
             "parameters": {},
             "defaults": {},
             "actions": [
@@ -75,7 +75,7 @@
     {
       "name": "discharge_query",
       "template": "select encounter_id as transaction_id from encounters where discharge_date is not null and discharge_date >= :lower_discharge_date and discharge_date < :upper_discharge_date",
-      "parameters": ["lower_discharge_date", "upper_discharge_date"]
+      "parameter_list": ["lower_discharge_date", "upper_discharge_date"]
     },
     {
       "name": "encounter_detail_query",
