@@ -41,6 +41,8 @@ class RunMemoryBox(unittest.TestCase):
             self.connection = self.engine.connect()
             self.meta_data = sa.MetaData(self.connection, schema=config["db_schema"])
 
+            self.data_connections = config["data_connections"]
+
             schema_define.create_and_populate_schema(self.meta_data, self.connection)
 
         with open("./files/encounter_memory_box_test_load.json") as f:
@@ -49,7 +51,7 @@ class RunMemoryBox(unittest.TestCase):
             self.mbox_load_obj.load_into_db()
 
     def test_run_memory_box(self):
-        self.memory_box_runner = MemoryBoxRunner("encounter", self.connection, self.meta_data)
+        self.memory_box_runner = MemoryBoxRunner("encounter", self.connection, self.meta_data, self.data_connections)
 
         cursor1 = self.connection.execute("select * from %s.track_items" % self.meta_data.schema)
         self.assertFalse(len(list(cursor1)))

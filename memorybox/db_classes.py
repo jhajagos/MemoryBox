@@ -38,6 +38,9 @@ class DBClass(object):
         else:
             return None
 
+    def find_by_sql(self, sql_query):
+        return list(self.connection.execute(sql_query))
+
 
 class DBClassName(DBClass):
     """Base class for working with table name"""
@@ -134,6 +137,27 @@ class DataItemClassActions(DBClass):
 class TransitionStateItemClasses(DBClass):
     def _table_name(self):
         return "transition_state_item_classes"
+
+    def find_transitions_for_memory_box(self, memory_box_name):
+
+        query_dict = {"schema": self.meta_data.schema, "memory_box_name": memory_box_name}
+
+        sql_query = """
+  select ic.*,
+       s1.name as from_state_name, s2.name as to_state_name,
+       a.name as action_name,
+       i.name as item_class_name
+  from %(schema)s.transition_state_item_classes ic
+  left outer join %(schema)s.states s1 on s1.id = ic.from_state_id
+  join %(schema)s.states s2 on s2.id = ic.to_state_id
+  join %(schema)s.actions a on a.id = ic.action_id
+  join %(schema)s.item_classes i on i.id = ic.item_class_id
+  join %(schema)s.memory_boxes mb on i.memory_box_id = mb.id
+  where mb.name = '%(memory_box_name)s'
+  order by ic.id
+        """ % query_dict
+
+        return self.find_by_sql(sql_query)
 
 
 class TrackItems(DBClass):

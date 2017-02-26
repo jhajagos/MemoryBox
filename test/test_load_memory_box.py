@@ -20,7 +20,6 @@ class TestLoadMemoryBox(unittest.TestCase):
         with open("./files/encounter_memory_box_test_load.json") as f:
             self.memory_box_struct = json.load(f)
 
-
     def test_load(self):
 
         mbox_load_obj = MemoryBoxLoader(self.memory_box_struct, self.connection, self.meta_data)
