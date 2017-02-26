@@ -4,7 +4,7 @@ from db_classes import *
 class MemoryBoxLoader(object):
     """Load a MemoryBox struct into memory"""
 
-    def __init__(self, meta_data, connection, struct_dict):
+    def __init__(self, struct_dict, connection, meta_data):
         self.meta_data = meta_data
         self.connection = connection
         self.struct_dict = struct_dict
@@ -139,7 +139,6 @@ class MemoryBoxLoader(object):
                                     data_item_class_name = action["data_item_class"]
 
                                     data_item_class_action_tuple = (data_item_class_name, action_name)
-                                    print(data_item_class_action_id_dict)
                                     data_item_class_action_id = data_item_class_action_id_dict[data_item_class_action_tuple]
 
                                     dt_act_trans_state_items_dict = {"data_item_class_action_id": data_item_class_action_id,

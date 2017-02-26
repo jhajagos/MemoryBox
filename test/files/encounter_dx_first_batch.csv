@@ -1,0 +1,4 @@
+encounter_number,diagnosis_type,sequence_id,diagnosis_code
+1008881001,Admit,1,ZZ.XX
+1008881001,Discharge,1,ZZ.XX
+1008881001,Discharge,2,ZZ1.XX
