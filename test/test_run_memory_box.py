@@ -1,12 +1,19 @@
 import unittest
 from test_utilities import load_csv_into_database, create_schema_test_database
+import schema_define
 import sqlalchemy as sa
 import os
+import json
+from memorybox.load import MemoryBoxLoader
+from memorybox.run import MemoryBoxRunner
 
 
 class RunMemoryBox(unittest.TestCase):
 
     def setUp(self):
+
+        # Setup a source database to test the functionality of tracking items in a changing database
+
         test_connection_string = "sqlite:///./files/test_encounter.db3"
         if os.path.exists("./files/test_encounter.db3"):
             os.remove("./files/test_encounter.db3")
@@ -14,20 +21,46 @@ class RunMemoryBox(unittest.TestCase):
         with open("./files/encounters_database_schema.sql") as f:
             schema_string = f.read()
 
-        connection, meta_data = create_schema_test_database(test_connection_string, schema_string)
+        source_connection, source_meta_data = create_schema_test_database(test_connection_string, schema_string)
 
         self.number_of_initial_encounters = load_csv_into_database("encounters",
                                                                    "./files/encounters_first_batch.csv",
-                                                                   connection, meta_data)
+                                                                   source_connection, source_meta_data)
         self.number_of_initial_encounter_dx = load_csv_into_database("encounter_dx",
                                                                      "./files/encounter_dx_first_batch.csv",
-                                                                     connection, meta_data)
+                                                                     source_connection, source_meta_data)
         self.number_of_initial_persons = load_csv_into_database("patient", "./files/patient_first_batch.csv",
-                                                                connection, meta_data)
+                                                                source_connection, source_meta_data)
 
-    def test_something(self):
-        self.assertEqual(True, False)
+        # Create a fresh memory box database in a schema
+
+        with open("testing_config.json", "r") as f:
+            config = json.load(f)
+
+            self.engine = sa.create_engine(config["connection_uri"])
+            self.connection = self.engine.connect()
+            self.meta_data = sa.MetaData(self.connection, schema=config["db_schema"])
+
+            schema_define.create_and_populate_schema(self.meta_data, self.connection)
+
+        with open("./files/encounter_memory_box_test_load.json") as f:
+            self.memory_box_struct = json.load(f)
+            self.mbox_load_obj = MemoryBoxLoader(self.memory_box_struct, self.connection, self.meta_data)
+            self.mbox_load_obj.load_into_db()
+
+    def test_run_memory_box(self):
+        self.memory_box_runner = MemoryBoxRunner("encounter", self.connection, self.meta_data)
+
+        cursor1 = self.connection.execute("select * from %s.track_items" % self.meta_data.schema)
+        self.assertFalse(len(list(cursor1)))
+
+        self.memory_box_runner.run()
+
+        cursor2 = self.connection.execute("select * from %s.track_items" % self.meta_data.schema)
+        self.assertTrue(len(list(cursor2)))
+
 
 
 if __name__ == '__main__':
+
     unittest.main()

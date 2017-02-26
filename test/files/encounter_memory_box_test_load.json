@@ -22,6 +22,15 @@
                "data_item_class": "encounter_detail"
               }
             ]
+          },
+          {
+            "from": "New",
+            "to": "Watch",
+            "query_template": null,
+            "action": "Pass",
+            "parameters": {},
+            "defaults": {},
+            "actions": []
           }
         ],
         "data_items": {

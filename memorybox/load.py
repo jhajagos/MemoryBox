@@ -121,7 +121,13 @@ class MemoryBoxLoader(object):
                                 to_state_id = to_state.id
 
                             action_id = action_obj.find_one(transition["action"]).id
-                            query_template_id = query_template_obj.find_one(transition["query_template"]).id
+
+                            query_template = query_template_obj.find_one(transition["query_template"])
+                            if query_template is None:
+                                query_template_id = None
+                            else:
+                                query_template_id = query_template.id
+
 
                             transition_dict = {"item_class_id": item_class_id, "query_template_id": query_template_id,
                                                "action_id": action_id, "from_state_id": from_state_id,
