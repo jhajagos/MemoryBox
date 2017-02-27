@@ -28,7 +28,26 @@ class MemoryBoxRunner(object):
     def _odbc_date_to_datetime(self, odbc_date_string):
         return datetime.datetime.strptime(odbc_date_string, "%Y-%m-%d")
 
+    def _get_transitions_data_item_classes(self, transition_state_item_class_id):
+
+        sql_query_dict = {"schema": self.meta_data.schema, "transition_state_item_class_id": transition_state_item_class_id}
+
+        sql_query = """
+        select dia.transition_state_item_class_id, dica.*, dic.name as data_class_name, a.name as action_name from
+  %(schema)s.data_item_actions_transition_state_items dia
+  join %(schema)s.transition_state_item_classes tsic on tsic.id = dia.transition_state_item_class_id
+  join %(schema)s.data_item_class_actions dica ON dica.id = dia.data_item_class_action_id
+  join %(schema)s.data_item_classes dic on dic.id = dica.data_item_class_id
+  join %(schema)s.data_item_types dit on dit.id = dic.data_item_type_id
+  join %(schema)s.actions a on a.id = dica.action_id
+  where dia.transition_state_item_class_id = %(transition_state_item_class_id)s
+        """ % sql_query_dict
+
+        return list(self.connection.execute(sql_query))
+
     def _generate_query_parameters(self, parameters, defaults):
+        """Generates from passed in parameters and default parameter values for query template"""
+        #TODO: This is hard coded for testing purposes
         return {"lower_discharge_date_time": self._odbc_date_to_datetime("2016-09-30"), "upper_discharge_date_time": self._odbc_date_to_datetime("2016-11-01")}
 
     def run(self, item_class_name):
@@ -54,6 +73,9 @@ class MemoryBoxRunner(object):
             action_id = transition.action_id
             action_name = transition.action_name
 
+            transition_state_item_class_id = transition.id
+            data_item_transitions_to_process = self._get_transitions_data_item_classes(transition_state_item_class_id)
+
             if query_template_id is not None:
                 query_template_result = query_template_obj.find_by_id(query_template_id)
 
@@ -73,7 +95,10 @@ class MemoryBoxRunner(object):
                             track_item_dict["created_at"] = datetime.datetime.utcnow()
                             track_item_dict["updated_at"] = datetime.datetime.utcnow()
 
-                            new_record = track_item_obj.insert_struct(track_item_dict)
+                            track_item_id = track_item_obj.insert_struct(track_item_dict)
+
+                            # Process specific actions for underlying data items
+
 
 
 
