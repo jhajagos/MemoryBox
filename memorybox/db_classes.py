@@ -138,9 +138,9 @@ class TransitionStateItemClasses(DBClass):
     def _table_name(self):
         return "transition_state_item_classes"
 
-    def find_transitions_for_memory_box(self, memory_box_name):
+    def find_transitions_for_memory_box(self, memory_box_name, item_class_name):
 
-        query_dict = {"schema": self.meta_data.schema, "memory_box_name": memory_box_name}
+        query_dict = {"schema": self.meta_data.schema, "memory_box_name": memory_box_name, "item_class_name": item_class_name}
 
         sql_query = """
   select ic.*,
@@ -152,7 +152,7 @@ class TransitionStateItemClasses(DBClass):
   join %(schema)s.states s2 on s2.id = ic.to_state_id
   join %(schema)s.actions a on a.id = ic.action_id
   join %(schema)s.item_classes i on i.id = ic.item_class_id
-  join %(schema)s.memory_boxes mb on i.memory_box_id = mb.id
+  join %(schema)s.memory_boxes mb on i.memory_box_id = mb.id and i.name = '%(item_class_name)s'
   where mb.name = '%(memory_box_name)s'
   order by ic.id
         """ % query_dict

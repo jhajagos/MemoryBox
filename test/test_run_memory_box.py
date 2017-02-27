@@ -56,7 +56,7 @@ class RunMemoryBox(unittest.TestCase):
         cursor1 = self.connection.execute("select * from %s.track_items" % self.meta_data.schema)
         self.assertFalse(len(list(cursor1)))
 
-        self.memory_box_runner.run()
+        self.memory_box_runner.run("discharges")
 
         cursor2 = self.connection.execute("select * from %s.track_items" % self.meta_data.schema)
         self.assertTrue(len(list(cursor2)))

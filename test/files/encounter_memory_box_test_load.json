@@ -83,23 +83,23 @@
   "query_templates": [
     {
       "name": "discharge_query",
-      "template": "select encounter_id as transaction_id from encounters where discharge_date is not null and discharge_date >= :lower_discharge_date and discharge_date < :upper_discharge_date",
+      "template": "select encounter_number as transaction_id from encounters where discharge_date_time is not null and discharge_date_time >= :lower_discharge_date_time and discharge_date_time < :upper_discharge_date_time",
       "parameter_list": ["lower_discharge_date", "upper_discharge_date"]
     },
     {
       "name": "encounter_detail_query",
-      "template": "select * from encounters = :encounter_id",
-      "parameter_list": ["encounter_id"]
+      "template": "select * from encounters where ecounter_number = :encounter_number",
+      "parameter_list": ["encounter_number"]
     },
     {
       "name": "encounter_dx_query",
-      "template": "select * from encounter_dx = :encounter_id order by sequence_id",
-      "parameter_list": ["encounter_id"]
+      "template": "select * from encounter_dx where encounter_number = :encounter_number order by sequence_id",
+      "parameter_list": ["encounter_number"]
     },
     {
       "name": "encounter_document_query",
-      "template": "select * from encounter_docuement = :encounter_id",
-      "parameter_list": ["encounter_id"]
+      "template": "select * from encounter_docuement where endounter_number = :encounter_number",
+      "parameter_list": ["encounter_number"]
     },
     {
       "name": "person_query",
