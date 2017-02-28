@@ -164,6 +164,17 @@ class TrackItems(DBClass):
     def _table_name(self):
         return "track_items"
 
+    def find_by_transaction_id(self, transaction_id, item_class_id):
+        sql_query_dict = {"transaction_id": transaction_id, "item_class_id": item_class_id}
+        cursor = self.connection.execute("select * from track_items where transaction_id = :transaction_id and item_class_id = :item_class_id", **sql_query_dict)
+        return list(cursor)
+
+    def find_by_from_state_id(self, from_state_id, item_class_id):
+        sql_query_dict = {"from_state_id": from_state_id, "item_class_id": item_class_id}
+        cursor = self.connection.execute("select * from track_items where from_state_id = :from_state_id and item_class_id = :item_class_id",
+            **sql_query_dict)
+        return cursor
+
 
 class TrackItemUpdates(DBClass):
     def _table_name(self):

@@ -76,28 +76,34 @@ class MemoryBoxRunner(object):
             transition_state_item_class_id = transition.id
             data_item_transitions_to_process = self._get_transitions_data_item_classes(transition_state_item_class_id)
 
-            if query_template_id is not None:
-                query_template_result = query_template_obj.find_by_id(query_template_id)
 
-                parameters = transition.parameters
-                default_parameters = transition.defaults
+            query_template_result = query_template_obj.find_by_id(query_template_id)
+            parameters = transition.parameters
+            default_parameters = transition.defaults
+            if from_state_id is None: # Bringing new items to track into the database
 
                 query_parameters = self._generate_query_parameters(parameters, default_parameters)
 
                 source_cursor = self.source_connection.execute(query_template_result.template, **query_parameters)
-
                 for source_row in source_cursor:
 
                     track_item_dict = {"item_class_id": item_class_id, "state_id": to_state_id, "transaction_id": source_row.transaction_id}
 
-                    if from_state_id is None:
-                        if action_name == "Insert new":
-                            track_item_dict["created_at"] = datetime.datetime.utcnow()
-                            track_item_dict["updated_at"] = datetime.datetime.utcnow()
+                    if action_name == "Insert new":
+                        track_item_dict["updated_at"] = datetime.datetime.utcnow()
+                        track_item_dict["created_at"] = datetime.datetime.utcnow()
+                        if from_state_id is None:
 
-                            track_item_id = track_item_obj.insert_struct(track_item_dict)
+                            track_item_result = track_item_obj.find_by_transaction_id(track_item_dict["transaction_id"], item_class_id)
+                            if track_item_result is None:
+                                track_item_id = track_item_obj.insert_struct(track_item_dict)
+                                # TODO: trigger associated data item updates
 
-                            # Process specific actions for underlying data items
+            else: # Handle other transitions by trigger or time elapsed / age out
+
+                cursor = track_item_obj.find_by_from_state_id(from_state_id, item_class_id)
+
+
 
 
 
