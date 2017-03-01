@@ -76,13 +76,16 @@ class MemoryBoxRunner(object):
             transition_state_item_class_id = transition.id
             data_item_transitions_to_process = self._get_transitions_data_item_classes(transition_state_item_class_id)
 
-
-            query_template_result = query_template_obj.find_by_id(query_template_id)
             parameters = transition.parameters
             default_parameters = transition.defaults
-            if from_state_id is None: # Bringing new items to track into the database
 
+            if query_template_id is not None:
+                query_template_result = query_template_obj.find_by_id(query_template_id)
                 query_parameters = self._generate_query_parameters(parameters, default_parameters)
+            else:
+                query_parameters = None
+
+            if from_state_id is None: # Bringing new items to track into the database
 
                 source_cursor = self.source_connection.execute(query_template_result.template, **query_parameters)
                 for source_row in source_cursor:
@@ -101,7 +104,37 @@ class MemoryBoxRunner(object):
 
             else: # Handle other transitions by trigger or time elapsed / age out
 
+                if action_name == "Update":
+                    transaction_id_dict = {}
+                    if query_template_result is not None:
+                        source_cursor = self.source_connection.execute(query_template_result.template, **query_parameters)
+                        for row in source_cursor:
+                            transaction_id_dict[row.transaction_id] = 1
+                else:
+                    transaction_id_dict = None
+
                 cursor = track_item_obj.find_by_from_state_id(from_state_id, item_class_id)
+
+                for row in cursor:
+                    transaction_id = row.transaction_id
+                    data_item_updates = 0
+                    state_item_update = 0
+
+                    if transaction_id_dict is not None:
+                        if transaction_id in transaction_id_dict:
+                            data_item_updates = 1
+                            state_item_update = 1
+                    else:
+                        pass
+
+
+                    if state_item_update:
+                        pass
+                        # TODO: update state
+
+                    if data_item_updates:
+                        pass
+                        # TODO: trigger associated with data item update
 
 
 

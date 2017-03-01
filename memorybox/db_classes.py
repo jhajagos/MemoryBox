@@ -115,9 +115,11 @@ class DataItems(DBClass):
     def _table_name(self):
         return "data_items"
 
+
 class DataItemClasses(DBClass):
     def _table_name(self):
         return "data_item_classes"
+
 
 class DataItemTypes(DBClass):
     def _table_name(self):
@@ -165,14 +167,17 @@ class TrackItems(DBClass):
         return "track_items"
 
     def find_by_transaction_id(self, transaction_id, item_class_id):
-        sql_query_dict = {"transaction_id": transaction_id, "item_class_id": item_class_id}
-        cursor = self.connection.execute("select * from track_items where transaction_id = :transaction_id and item_class_id = :item_class_id", **sql_query_dict)
+        sql_query_dict = {"transaction_id": transaction_id, "item_class_id": item_class_id, "schema": self.meta_data.schema}
+        cursor = self.connection.execute(
+            "select * from %(schema)s.track_items where transaction_id = '%(transaction_id)s' and item_class_id = %(item_class_id)s" % sql_query_dict)
+
         return list(cursor)
 
     def find_by_from_state_id(self, from_state_id, item_class_id):
-        sql_query_dict = {"from_state_id": from_state_id, "item_class_id": item_class_id}
-        cursor = self.connection.execute("select * from track_items where from_state_id = :from_state_id and item_class_id = :item_class_id",
-            **sql_query_dict)
+        sql_query_dict = {"state_id": from_state_id, "item_class_id": item_class_id, "schema": self.meta_data.schema}
+        cursor = self.connection.execute(
+            "select * from %(schema)s.track_items where state_id = %(state_id)s and item_class_id = %(item_class_id)s" % sql_query_dict)
+
         return cursor
 
 
