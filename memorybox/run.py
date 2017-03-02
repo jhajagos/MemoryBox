@@ -50,6 +50,16 @@ class MemoryBoxRunner(object):
         #TODO: This is hard coded for testing purposes
         return {"lower_discharge_date_time": self._odbc_date_to_datetime("2016-09-30"), "upper_discharge_date_time": self._odbc_date_to_datetime("2016-11-01")}
 
+    def _update_data_items(self, track_item_id, state_id, data_item_actions):
+        track_item_update_obj = TrackItemUpdates(self.connection, self.meta_data)
+        track_item_update_struct = {"track_item_id": track_item_id, "state_id": state_id, "created_at": datetime.datetime.utcnow()}
+        track_item_update_id = track_item_update_obj.insert_struct(track_item_update_struct)
+
+        for data_item_action in data_item_actions:
+            pass
+
+
+
     def run(self, item_class_name):
 
         transition_state_obj = TransitionStateItemClasses(self.connection, self.meta_data)
@@ -98,8 +108,10 @@ class MemoryBoxRunner(object):
                         if from_state_id is None:
 
                             track_item_result = track_item_obj.find_by_transaction_id(track_item_dict["transaction_id"], item_class_id)
-                            if track_item_result is None:
+
+                            if not len(track_item_result):
                                 track_item_id = track_item_obj.insert_struct(track_item_dict)
+                                self._update_data_items(track_item_id,  to_state_id, data_item_transitions_to_process)
                                 # TODO: trigger associated data item updates
 
             else: # Handle other transitions by trigger or time elapsed / age out
@@ -126,7 +138,6 @@ class MemoryBoxRunner(object):
                             state_item_update = 1
                     else:
                         pass
-
 
                     if state_item_update:
                         pass
