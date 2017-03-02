@@ -88,7 +88,7 @@
     },
     {
       "name": "encounter_detail_query",
-      "template": "select * from encounters where ecounter_number = :encounter_number",
+      "template": "select * from encounters where encounter_number = :encounter_number",
       "parameter_list": ["encounter_number"]
     },
     {
@@ -98,7 +98,7 @@
     },
     {
       "name": "encounter_document_query",
-      "template": "select * from encounter_docuement where endounter_number = :encounter_number",
+      "template": "select * from encounter_docuement where encounter_number = :encounter_number",
       "parameter_list": ["encounter_number"]
     },
     {

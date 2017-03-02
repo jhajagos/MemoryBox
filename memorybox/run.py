@@ -33,13 +33,16 @@ class MemoryBoxRunner(object):
         sql_query_dict = {"schema": self.meta_data.schema, "transition_state_item_class_id": transition_state_item_class_id}
 
         sql_query = """
-        select dia.transition_state_item_class_id, dica.*, dic.name as data_class_name, a.name as action_name from
+        select dia.transition_state_item_class_id, dica.*, dic.name as data_item_class_name, a.name as action_name,
+          q.template as query_template, dit.name as data_type_name, dit.id as data_item_type_id
+         from
   %(schema)s.data_item_actions_transition_state_items dia
   join %(schema)s.transition_state_item_classes tsic on tsic.id = dia.transition_state_item_class_id
   join %(schema)s.data_item_class_actions dica ON dica.id = dia.data_item_class_action_id
   join %(schema)s.data_item_classes dic on dic.id = dica.data_item_class_id
   join %(schema)s.data_item_types dit on dit.id = dic.data_item_type_id
   join %(schema)s.actions a on a.id = dica.action_id
+  left outer join %(schema)s.query_templates q on q.id = dica.query_template_id
   where dia.transition_state_item_class_id = %(transition_state_item_class_id)s
         """ % sql_query_dict
 
@@ -52,11 +55,36 @@ class MemoryBoxRunner(object):
 
     def _update_data_items(self, track_item_id, state_id, data_item_actions):
         track_item_update_obj = TrackItemUpdates(self.connection, self.meta_data)
+        data_item_obj = DataItems(self.connection, self.meta_data)
         track_item_update_struct = {"track_item_id": track_item_id, "state_id": state_id, "created_at": datetime.datetime.utcnow()}
         track_item_update_id = track_item_update_obj.insert_struct(track_item_update_struct)
 
         for data_item_action in data_item_actions:
-            pass
+
+            query_parameters = data_item_action.parameters
+            query_template = data_item_action.query_template
+
+            data_item_class_name = data_item_action.data_item_class_name
+            data_item_class_id = data_item_action.data_item_class_id
+            data_item_type_id = data_item_action.data_item_type_id
+            cursor = self.source_connection.execute(query_template, **query_parameters)
+
+            data_item_dict = {"data_item_class_id": data_item_class_id,
+                              "data_item_type_id": data_item_type_id, "track_item_update_id": track_item_update_id,
+                              "created_at": datetime.datetime.utcnow()
+                              }
+
+            if data_item_class_name == "JSON":
+                data = []
+                for row in cursor:
+                    data += [row]
+                data_item_dict["data"]
+
+            #TODO: Add support for other types
+
+            data_item_obj.insert_struct(data_item_dict)
+
+
 
 
 
@@ -111,7 +139,7 @@ class MemoryBoxRunner(object):
 
                             if not len(track_item_result):
                                 track_item_id = track_item_obj.insert_struct(track_item_dict)
-                                self._update_data_items(track_item_id,  to_state_id, data_item_transitions_to_process)
+                                self._update_data_items(track_item_id, to_state_id, data_item_transitions_to_process)
                                 # TODO: trigger associated data item updates
 
             else: # Handle other transitions by trigger or time elapsed / age out
