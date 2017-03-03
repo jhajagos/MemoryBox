@@ -7,13 +7,28 @@ class QueryParameters(object):
     def __init__(self, connection, meta_data):
         self.connection = connection
         self.meta_data = meta_data
+        self.reserved_values = ["_transaction_id"]
 
     def generate(self, parameters, transaction_id=None):
         parameters_dict = {}
+        for parameter in parameters:
+            parameter_value = parameters[parameter]
+            if parameter_value.__class__ == {}.__class__:
+                pass # TODO: Add more complicated parameter processing
+            else:
+                if parameter_value in self.reserved_values:
+                    if parameter_value == "_transaction_id":
+                        parameters_dict[parameter] = transaction_id
+                else:
+                    parameters_dict[parameter] = parameters[parameter]
+
         return parameters_dict
 
 
 class MemoryBoxRunner(object):
+    """
+        Class which encapsulates the updating of memory box against a source data source
+    """
 
     def __init__(self, memory_box, connection, meta_data, data_connections_dict):
         self.memory_box = memory_box
@@ -29,7 +44,6 @@ class MemoryBoxRunner(object):
         self.data_connection_name = data_connection_row_dict.name
 
         self.track_item_update_obj = TrackItemUpdates(self.connection, self.meta_data)
-
         self.source_data_connection_uri = data_connections_dict[self.data_connection_name]
 
         self.source_engine = sa.create_engine(self.source_data_connection_uri)
@@ -43,7 +57,8 @@ class MemoryBoxRunner(object):
     def _odbc_date_to_datetime(self, odbc_date_string):
         return datetime.datetime.strptime(odbc_date_string, "%Y-%m-%d")
 
-    def _convert_to_json(self, row_data):
+    def _convert_row_to_json(self, row_data):
+        "Convert a database row to a JSON serializable structure"
         row_dict = {}
 
         for column in row_data.keys():
@@ -56,6 +71,7 @@ class MemoryBoxRunner(object):
         return row_dict
 
     def _get_transitions_data_item_classes(self, transition_state_item_class_id):
+        "Query to get data items classes"
 
         sql_query_dict = {"schema": self.meta_data.schema, "transition_state_item_class_id": transition_state_item_class_id}
 
@@ -75,13 +91,15 @@ class MemoryBoxRunner(object):
         """ % sql_query_dict
 
         return list(self.connection.execute(sql_query))
-
-    def _generate_query_parameters(self, parameters, defaults):
-        """Generates from passed in parameters and default parameter values for query template"""
-        #TODO: This is hard coded for testing purposes
-        return {"lower_discharge_date_time": self._odbc_date_to_datetime("2016-09-30"), "upper_discharge_date_time": self._odbc_date_to_datetime("2016-11-01")}
+    #
+    # def _generate_query_parameters(self, parameters, defaults):
+    #     """Generates from passed in parameters and default parameter values for query template"""
+    #     #TODO: This is hard coded for testing purposes
+    #     return {"lower_discharge_date_time": self._odbc_date_to_datetime("2016-09-30"), "upper_discharge_date_time": self._odbc_date_to_datetime("2016-11-01")}
 
     def _update_data_items(self, track_item_id, state_id, data_item_actions):
+        "Update data items"
+
         track_item_obj = TrackItems(self.connection, self.meta_data)
         track_item_result = track_item_obj.find_by_id(track_item_id)
         transaction_id = track_item_result.transaction_id
@@ -112,7 +130,7 @@ class MemoryBoxRunner(object):
             if data_item_type_name == "JSON":
                 data = []
                 for row in cursor:
-                    data += [self._convert_to_json(row)]
+                    data += [self._convert_row_to_json(row)]
                 data_item_dict["data"] = data
 
             #TODO: Add support for other types
@@ -122,34 +140,27 @@ class MemoryBoxRunner(object):
 
         transition_state_obj = TransitionStateItemClasses(self.connection, self.meta_data)
         query_template_obj = QueryTemplates(self.connection, self.meta_data)
-        item_class_obj = ItemClasses(self.connection, self.meta_data)
         track_item_obj = TrackItems(self.connection, self.meta_data)
-
         transitions = transition_state_obj.find_transitions_for_memory_box(self.memory_box, item_class_name)
 
         for transition in transitions:
             query_template_id = transition.query_template_id
 
-            from_state_name = transition.from_state_name
             from_state_id = transition.from_state_id
-
-            to_state_name = transition.to_state_name
             to_state_id = transition.to_state_id
-
             item_class_id = transition.item_class_id
 
-            action_id = transition.action_id
             action_name = transition.action_name
 
             transition_state_item_class_id = transition.id
             data_item_transitions_to_process = self._get_transitions_data_item_classes(transition_state_item_class_id)
 
             parameters = transition.parameters
-            default_parameters = transition.defaults
 
             if query_template_id is not None:
                 query_template_result = query_template_obj.find_by_id(query_template_id)
                 query_parameters = self.query_parameters_obj.generate(parameters)
+
             else:
                 query_parameters = None
 
@@ -170,9 +181,8 @@ class MemoryBoxRunner(object):
                             if not len(track_item_result):
                                 track_item_id = track_item_obj.insert_struct(track_item_dict)
                                 self._update_data_items(track_item_id, to_state_id, data_item_transitions_to_process)
-                                # TODO: trigger associated data item updates
 
-            else: # Handle other transitions by trigger or time elapsed / age out
+            else:  # Handle other transitions by trigger or time elapsed / age out
                 if action_name == "Update":
                     transaction_id_dict = {}
                     if query_template_result is not None:
@@ -192,17 +202,9 @@ class MemoryBoxRunner(object):
                     if transaction_id_dict is not None:
                         if transaction_id in transaction_id_dict:
                             data_item_updates = 1
-                            state_item_update = 1
                     else:
-                        pass
-
-                    if state_item_update:
-
-                        track_item_update_struct = {"track_item_id": track_item_id, "state_id": to_state_id,
-                                                    "updated_at": datetime.datetime.utcnow()}
-
-                        self.track_item_update_obj.insert_struct(track_item_update_struct)
-                        track_item_obj.update_struct(track_item_id, {"state_id": to_state_id, "state_id": to_state_id})
+                        data_item_updates = 1
 
                     if data_item_updates:
                         self._update_data_items(track_item_id, to_state_id, data_item_transitions_to_process)
+                        track_item_obj.update_struct(track_item_id, {"state_id": to_state_id, "state_id": to_state_id})

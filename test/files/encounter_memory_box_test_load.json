@@ -15,7 +15,7 @@
             "to": "New",
             "query_template": "discharge_query",
             "action": "Insert new",
-            "parameters": {},
+            "parameters": {"lower_discharge_date_time": "2016-10-01", "upper_discharge_date_time": "2016-12-01"},
             "defaults": {},
             "actions": [
               {"name": "Insert",
@@ -41,7 +41,7 @@
                 {
                   "name": "Insert",
                   "query_template": "encounter_detail_query",
-                  "parameters": {}
+                  "parameters": {"encounter_number": "_transaction_id"}
                 }
               ]
             },
@@ -51,7 +51,7 @@
                 {
                   "name": "Insert",
                   "query_template": "encounter_dx_query",
-                  "parameters": {}
+                  "parameters":  {"encounter_number": "_transaction_id"}
                 }
               ]
             },
@@ -84,7 +84,7 @@
     {
       "name": "discharge_query",
       "template": "select encounter_number as transaction_id from encounters where discharge_date_time is not null and discharge_date_time >= :lower_discharge_date_time and discharge_date_time < :upper_discharge_date_time",
-      "parameter_list": ["lower_discharge_date", "upper_discharge_date"]
+      "parameter_list": ["lower_discharge_date_time", "upper_discharge_date_time"]
     },
     {
       "name": "encounter_detail_query",
