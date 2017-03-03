@@ -1,6 +1,6 @@
 encounter_number,pseudo_mrn,admit_date_time,discharge_date_time,admit_type,admit_source
 1008881001,G4567,2016-10-01,,planned,home
-1008881002,K9876,2016-10-01,2015-10-15,emergency,transfer
+1008881002,K9876,2016-10-01,2016-10-15,emergency,transfer
 1008881012,TRM49,2016-09-14 08:10,2016-10-02,emergency,home
 1008881013,788999,2016-10-02,2016-10-05,planned,home
 1008882001,XTX001,2016-10-30,,planned,SNF

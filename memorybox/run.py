@@ -196,8 +196,8 @@ class MemoryBoxRunner(object):
 
                 for row in cursor:
                     transaction_id = row.transaction_id
+                    track_item_id = row.id
                     data_item_updates = 0
-                    state_item_update = 0
 
                     if transaction_id_dict is not None:
                         if transaction_id in transaction_id_dict:
