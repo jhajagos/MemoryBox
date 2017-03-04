@@ -54,7 +54,7 @@ def schema_define(meta_data):
                         Column("id", Integer, primary_key=True),
                         Column("item_class_id", ForeignKey("item_classes.id")),
                         Column("state_id", ForeignKey("states.id")),
-                        Column("transaction_id", String(255)),
+                        Column("transaction_id", String(255), index=True),
                         Column("created_at", DateTime),
                         Column("updated_at", DateTime))
 
