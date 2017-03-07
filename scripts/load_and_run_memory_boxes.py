@@ -62,10 +62,8 @@ def main():
     with open(config_json_filename, "r") as f:
         config_dict = json.load(f)
 
-    if arg_parse_obj.list_available_memory_boxes or arg_parse_obj.initialize_database_schema:
+    if arg_obj.list_available_memory_boxes or arg_obj.initialize_database_schema:
         pass
-
-
 
 
 if __name__ == "__main__":
