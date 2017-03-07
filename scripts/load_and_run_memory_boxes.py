@@ -37,7 +37,7 @@ def list_available_memory_boxes_items(config_dict):
     pass
 
 def main():
-    arg_parse_obj = argparse.ArgumentParser(description="Create and load a MemoryBox for tracking items in an external source")
+    arg_parse_obj = argparse.ArgumentParser(description="Create and load a memory box for tracking items in an external source")
 
     arg_parse_obj.add_argument("-c", "--config-json-filename", dest="config_json_filename",
                                help="JSON configuration file: see './test/testing_config.json.example'", default="./config.json")
@@ -46,25 +46,26 @@ def main():
 
     arg_parse_obj.add_argument("-l", "--list-available-memory-boxes-items", dest="list_available_memory_boxes_items",
                                action="store_true", default=False,
-                               help="List name of memory boxes that are currently defined")
+                               help="List defined memory boxes and target items being tracked")
 
     arg_parse_obj.add_argument("-i", "--initialize-database-schema", action="store_true", default=False,
                                dest="initialize_database_schema",
-                               help="In an empty PostGreSQL schema initialize database.")
+                               help="In an empty PostGreSQL schema initialize the database")
 
     arg_parse_obj.add_argument("-d", "--drop-all-tables", action="store_true", default=False,
                                dest="drop_all_tables",
                                help="Drop all tables in schema")
 
-    arg_parse_obj.add_argument("-j", "--json-library-files", dest="json_library_files", default=None,
+    arg_parse_obj.add_argument("-t", "--json-library-files", dest="json_library_files", default=None,
                                help="A single file or a comma separate file list which contains JSON files")
 
-    arg_parse_obj.add_argument("-n", "--item-name", dest="item_name")
+    arg_parse_obj.add_argument("-n", "--item-name", dest="item_name", default=None,
+                               help="Name of target item to track")
 
     arg_parse_obj.add_argument("-m", "--memory-box-name", dest="memory_box_name", default=None)
 
     arg_parse_obj.add_argument("-r", "--run-memory-box-item", action="store_true", dest="run_memory_box_item",
-                               help="Run memory box")
+                               help="Track an item that has been defined in a memory box")
 
     arg_obj = arg_parse_obj.parse_args()
 
@@ -85,14 +86,12 @@ def main():
 
         if arg_obj.run_memory_box_item or arg_obj.memory_box_json_filename:
             if arg_obj.memory_box_name is None:
-                raise RuntimeError, "Memory box name needs to be specified"
+                raise RuntimeError, "Memory box name must be specified with option '-n'"
 
 
-        if arg_obj.memory_run_item:
+        if arg_obj.memory_box_run_item:
             if arg_obj.item_name is None:
-                raise RuntimeError, "Item name must be specified '-i'"
-
-
+                raise RuntimeError, "Item name must be specified with option '-i'"
 
 
 if __name__ == "__main__":
