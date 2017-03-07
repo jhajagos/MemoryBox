@@ -2,6 +2,7 @@ import csv
 import sqlalchemy as sa
 import datetime
 
+
 def create_schema_test_database(connection_string, schema_sql):
     eng = sa.create_engine(connection_string)
     connection = eng.connect()
