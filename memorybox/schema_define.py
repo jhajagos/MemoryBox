@@ -118,9 +118,11 @@ def populate_reference_table(table_name, meta, connection, list_of_values):
         connection.execute(table_obj.insert(tuple_value))
 
 
-def create_and_populate_schema(meta_data, connection):
+def create_and_populate_schema(meta_data, connection, drop_all=True):
     meta_data = schema_define(meta_data)
-    meta_data.drop_all()
+
+    if drop_all:
+        meta_data.drop_all()
 
     meta_data.create_all(checkfirst=True)
 
@@ -137,5 +139,4 @@ def create_and_populate_schema(meta_data, connection):
 
     actions = [(1, "Pass"), (2, "Insert"), (3, "Insert new")]
     populate_reference_table(table_dict["actions"], meta_data, connection, actions)
-
 
