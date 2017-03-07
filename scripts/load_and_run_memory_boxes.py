@@ -29,6 +29,13 @@ def initialize_database_schema(config_dict, drop_all_tables=False):
     print("Initialized %s tables in schema '%s'" % (len(table_dict), meta_data.schema))
 
 
+def merge_memory_box_dict_with_json_template_libaries(memory_box_dict, *template_json_libraries):
+    pass
+
+
+def list_available_memory_boxes_items(config_dict):
+    pass
+
 def main():
     arg_parse_obj = argparse.ArgumentParser(description="Create and load a MemoryBox for tracking items in an external source")
 
@@ -37,7 +44,7 @@ def main():
 
     arg_parse_obj.add_argument("-j", "--memory-box-json-filename", dest="memory_box_json_filename")
 
-    arg_parse_obj.add_argument("-l", "--list-available-memory-boxes", dest="list_available_memory_boxes",
+    arg_parse_obj.add_argument("-l", "--list-available-memory-boxes-items", dest="list_available_memory_boxes_items",
                                action="store_true", default=False,
                                help="List name of memory boxes that are currently defined")
 
@@ -49,9 +56,15 @@ def main():
                                dest="drop_all_tables",
                                help="Drop all tables in schema")
 
+    arg_parse_obj.add_argument("-j", "--json-library-files", dest="json_library_files", default=None,
+                               help="A single file or a comma separate file list which contains JSON files")
+
     arg_parse_obj.add_argument("-n", "--item-name", dest="item_name")
 
-    arg_parse_obj.add_argument("-r", "--run-memory-box", action="store_true", help="Run memory box")
+    arg_parse_obj.add_argument("-m", "--memory-box-name", dest="memory_box_name", default=None)
+
+    arg_parse_obj.add_argument("-r", "--run-memory-box-item", action="store_true", dest="run_memory_box_item",
+                               help="Run memory box")
 
     arg_obj = arg_parse_obj.parse_args()
 
@@ -62,8 +75,24 @@ def main():
     with open(config_json_filename, "r") as f:
         config_dict = json.load(f)
 
-    if arg_obj.list_available_memory_boxes or arg_obj.initialize_database_schema:
-        pass
+    if arg_obj.list_available_memory_boxes_items or arg_obj.initialize_database_schema:
+
+        if arg_obj.list_available_memory_boxes_items:
+            list_available_memory_boxes_items(config_dict)
+
+        if arg_obj.initialize_database_schema:
+            initialize_database_schema(config_dict, drop_all_tables=arg_obj.drop_all_tables)
+
+        if arg_obj.run_memory_box_item or arg_obj.memory_box_json_filename:
+            if arg_obj.memory_box_name is None:
+                raise RuntimeError, "Memory box name needs to be specified"
+
+
+        if arg_obj.memory_run_item:
+            if arg_obj.item_name is None:
+                raise RuntimeError, "Item name must be specified '-i'"
+
+
 
 
 if __name__ == "__main__":
