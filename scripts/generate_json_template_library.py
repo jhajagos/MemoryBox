@@ -41,7 +41,6 @@ def main():
 
             template_library_dict[template_name] = template_content
 
-
         print("Writing file '%s'" % full_out_json_filename)
         with open(out_json_filename) as fw:
             json.dump(template_library_dict, fw)

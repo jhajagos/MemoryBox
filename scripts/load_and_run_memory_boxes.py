@@ -32,11 +32,24 @@ def initialize_database_schema(config_dict, drop_all_tables=False):
 
 
 def merge_memory_box_dict_with_json_template_libaries(memory_box_dict, *template_json_libraries):
-    modified_memory_box_dict = {}
+   query_template_library = memory_box_dict["query_templates"]
 
-    modified_memory_box_dict = memory_box_dict  # TODO: Merge with records
+   template_name_dict = {} # Get already defined templates
+   for query_template in query_template_library:
+       query_template_name = query_template["name"]
+       template_name_dict[query_template_name] = 1
 
-    return modified_memory_box_dict
+   for template_json_library in template_json_libraries:
+        with open(template_json_library) as f:
+            template_library = json.load(f)
+
+        for key in template_library:
+            if key not in template_name_dict:
+                query_template_library += [{"name": key,
+                                           "template": template_library[key],
+                                           "parameter_list": []}]
+
+   return memory_box_dict
 
 
 def list_available_memory_boxes_items(config_dict):
