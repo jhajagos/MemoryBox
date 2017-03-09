@@ -111,14 +111,14 @@ def get_table_names_without_schema(meta):
     return table_dict
 
 
-def populate_reference_table(table_name, meta, connection, list_of_values):
+def populate_reference_table(table_name, connection, meta, list_of_values):
     table_obj = meta.tables[table_name]
 
     for tuple_value in list_of_values:
         connection.execute(table_obj.insert(tuple_value))
 
 
-def create_and_populate_schema(meta_data, connection, drop_all=True):
+def create_and_populate_schema(connection, meta_data, drop_all=True):
     meta_data = schema_define(meta_data)
 
     if drop_all:
@@ -129,14 +129,16 @@ def create_and_populate_schema(meta_data, connection, drop_all=True):
     table_dict = get_table_names_without_schema(meta_data)
 
     data_item_types = [(1, "JSON"), (2, "Text"), (3, "Base64")]
-    populate_reference_table(table_dict["data_item_types"], meta_data, connection, data_item_types)
+    populate_reference_table(table_dict["data_item_types"], connection, meta_data, data_item_types)
 
     states = [(1, "Start"), (2, "Stop"), (3, "Watch"), (4, "Archive"), (5, "New")]
-    populate_reference_table(table_dict["states"], meta_data, connection, states)
+    populate_reference_table(table_dict["states"], connection,  meta_data, states)
 
     data_connection_types = [(1, None, "Relational database"), (2, 1, "SQLite"), (3, 1, "PostGreSQL")]
-    populate_reference_table(table_dict["data_connection_types"], meta_data, connection,  data_connection_types)
+    populate_reference_table(table_dict["data_connection_types"], connection,  meta_data, data_connection_types)
 
     actions = [(1, "Pass"), (2, "Insert"), (3, "Insert new")]
-    populate_reference_table(table_dict["actions"], meta_data, connection, actions)
+    populate_reference_table(table_dict["actions"],  connection, meta_data, actions)
+
+    return meta_data, table_dict
 

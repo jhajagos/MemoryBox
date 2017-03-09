@@ -108,7 +108,7 @@ def main():
             if arg_obj.memory_box_name is None:
                 raise RuntimeError, "Memory box name must be specified with option '-n'"
 
-        if arg_obj.memory_box_run_item:
+        if arg_obj.run_memory_box_item:
             if arg_obj.item_name is None:
                 raise RuntimeError, "Item name must be specified with option '-i'"
 
