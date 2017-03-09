@@ -15,7 +15,7 @@ class TestLoadMemoryBox(unittest.TestCase):
             self.connection = self.engine.connect()
             self.meta_data = sa.MetaData(self.connection, schema=config["db_schema"])
 
-        schema_define.create_and_populate_schema(self.meta_data, self.connection)
+        schema_define.create_and_populate_schema(self.connection, self.meta_data)
 
         with open("./files/encounter_memory_box_test_load.json") as f:
             self.memory_box_struct = json.load(f)

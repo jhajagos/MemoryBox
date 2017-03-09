@@ -43,7 +43,7 @@ class RunMemoryBox(unittest.TestCase):
 
             self.data_connections = config["data_connections"]
 
-            schema_define.create_and_populate_schema(self.meta_data, self.connection)
+            schema_define.create_and_populate_schema(self.connection, self.meta_data, )
 
         with open("./files/encounter_memory_box_test_load.json") as f:
             self.memory_box_struct = json.load(f)
