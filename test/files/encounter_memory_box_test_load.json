@@ -31,6 +31,25 @@
             "parameters": {},
             "defaults": {},
             "actions": []
+          },
+          {
+            "from": "Watch",
+            "to": "Watch",
+            "query_template": null,
+            "action": "Pass",
+            "parameters": {},
+            "actions": []
+          },
+          {
+            "from": "Watch",
+            "to": "Archive",
+            "query_template": "encounter_document",
+            "action": "Pass",
+            "parameters": {"encounter_number": "_transaction_id"},
+            "actions": [
+              {"data_item_class"}
+            ]
+
           }
         ],
         "data_items": {
@@ -103,8 +122,8 @@
     },
     {
       "name": "person_query",
-      "template": "select * from pseduo_mrn = :pseudo_mrn",
-      "parameter_list": ["pseudo_mrn"]
+      "template": "select * from patient where pseduo_mrn in (select pseudo_mrn from encounter e where encounter_number = :encounter_number)",
+      "parameter_list": ["encounter_number"]
     }
   ]
 }
