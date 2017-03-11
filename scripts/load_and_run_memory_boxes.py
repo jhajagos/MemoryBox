@@ -48,12 +48,18 @@ def merge_memory_box_dict_with_json_template_libaries(memory_box_dict, *template
                 query_template_library += [{"name": key,
                                            "template": template_library[key],
                                            "parameter_list": []}]
-
    return memory_box_dict
 
 
 def list_available_memory_boxes_items(config_dict):
-    pass
+    connection, meta_data = get_db_connection(config_dict)
+
+    cursor = connection.execute("select * from %s.memory_boxes" % meta_data.schema)
+
+    results = list(cursor)
+    for result in results:
+        print(result.name)
+        print(list(connection.execute("select name from %s.item_classes where memory_box_id = %s" % (meta_data.schema, result.id))))
 
 
 def main():
@@ -62,7 +68,7 @@ def main():
     arg_parse_obj.add_argument("-c", "--config-json-filename", dest="config_json_filename",
                                help="JSON configuration file: see './test/testing_config.json.example'", default="./config.json")
 
-    arg_parse_obj.add_argument("-j", "--memory-box-json-filename", dest="memory_box_json_filename")
+    arg_parse_obj.add_argument("-j", "--memory-box-json-filename", dest="memory_box_json_filename", default=None)
 
     arg_parse_obj.add_argument("-l", "--list-available-memory-boxes-items", dest="list_available_memory_boxes_items",
                                action="store_true", default=False,
@@ -96,6 +102,27 @@ def main():
     with open(config_json_filename, "r") as f:
         config_dict = json.load(f)
 
+    if arg_obj.memory_box_json_filename:
+
+        connection, meta_data = get_db_connection(config_dict, reflect_db=True)
+
+        full_memory_box_json_filename = os.path.abspath(arg_obj.memory_box_json_filename)
+        with open(full_memory_box_json_filename, 'r') as f:
+            memory_box_struct = json.load(f)
+
+        if arg_obj.json_library_files:
+            if "," in arg_obj.json_library_files:
+                json_library_files = arg_obj.json_library_files.split(",")
+            else:
+                json_library_files = [arg_obj.json_library_files]
+
+            memory_box_struct = merge_memory_box_dict_with_json_template_libaries(memory_box_struct, json_library_files)
+
+        mbox_load_obj = MemoryBoxLoader(memory_box_struct, connection, meta_data)
+        mbox_load_obj.load_into_db()
+        print("Loading into DB")
+        return 1
+
     if arg_obj.list_available_memory_boxes_items or arg_obj.initialize_database_schema:
 
         if arg_obj.list_available_memory_boxes_items:
@@ -112,30 +139,12 @@ def main():
             if arg_obj.item_name is None:
                 raise RuntimeError, "Item name must be specified with option '-i'"
 
-        if arg_obj.memory_box_json_filename:
+    if arg_obj.run_memory_box_item:
+        print("Updating")
 
-            connection, meta_data = get_db_connection(config_dict, reflect_db=True)
-
-            full_memory_box_json_filename = os.path.abspath(arg_obj.memory_box_json_filename)
-            with open(full_memory_box_json_filename, 'r') as f:
-                memory_box_struct = json.load(f)
-
-            if arg_obj.json_library_files:
-                if "," in arg_obj.json_library_files:
-                    json_library_files = arg_obj.json_library_files.split(",")
-                else:
-                    json_library_files = [arg_obj.json_library_files]
-
-                memory_box_struct = merge_memory_box_dict_with_json_template_libaries(memory_box_struct, json_library_files)
-
-            mbox_load_obj = MemoryBoxLoader(memory_box_struct, connection, meta_data)
-            mbox_load_obj.load_into_db()
-
-        elif arg_obj.run_memory_box_item:
-
-            connection, meta_data = get_db_connection(config_dict, reflect_db=True)
-            memory_box_runner = MemoryBoxRunner(arg_obj.memory_box_name, connection, meta_data, config_dict["data_connections"])
-            memory_box_runner.run(arg_obj.item_name)
+        connection, meta_data = get_db_connection(config_dict, reflect_db=True)
+        memory_box_runner = MemoryBoxRunner(arg_obj.memory_box_name, connection, meta_data, config_dict["data_connections"])
+        memory_box_runner.run(arg_obj.item_name)
 
 
 if __name__ == "__main__":

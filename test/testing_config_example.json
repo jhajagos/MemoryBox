@@ -3,5 +3,5 @@
     "db_schema": "memorybox",
     "root_file_path": "./test/",
     "data_connections":
-        {"encounters": "sqlite3:///./files/encounters.db3"}
+        {"encounters": "sqlite3:///.files/encounters.db3"}
 }
