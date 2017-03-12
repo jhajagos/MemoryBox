@@ -15,6 +15,13 @@ create table encounter_dx (encounter_number int,
 );
 
 
+create table encounter_procedure (encounter_number int,
+  procedure varchar(64),
+  sequence_id int,
+  procedure_code varchar(12)
+);
+
+
 create table encounter_documents (encounter_number int,
   document_type varchar(64),
   document_date datetime,
