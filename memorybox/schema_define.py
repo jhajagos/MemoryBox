@@ -137,7 +137,7 @@ def create_and_populate_schema(connection, meta_data, drop_all=True):
     data_connection_types = [(1, None, "Relational database"), (2, 1, "SQLite"), (3, 1, "PostGreSQL")]
     populate_reference_table(table_dict["data_connection_types"], connection,  meta_data, data_connection_types)
 
-    actions = [(1, "Pass"), (2, "Insert"), (3, "Insert new")]
+    actions = [(1, "Pass"), (2, "Insert"), (3, "Insert new"), (4, "Update")]
     populate_reference_table(table_dict["actions"],  connection, meta_data, actions)
 
     return meta_data, table_dict

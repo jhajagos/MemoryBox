@@ -32,6 +32,11 @@ class RunMemoryBox(unittest.TestCase):
         self.number_of_initial_persons = load_csv_into_database("patient", "./files/patient_first_batch.csv",
                                                                 source_connection, source_meta_data)
 
+        self.number_of_initial_documents = load_csv_into_database("encounter_documents",
+                                                                  "./files/encounter_documents_first_batch.csv",
+                                                                  source_connection, source_meta_data
+                                                                  )
+
         # Create a fresh memory box database in a schema
 
         with open("testing_config.json", "r") as f:

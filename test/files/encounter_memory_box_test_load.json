@@ -37,19 +37,21 @@
             "to": "Watch",
             "query_template": null,
             "action": "Pass",
+            "defaults": {},
             "parameters": {},
             "actions": []
           },
           {
             "from": "Watch",
             "to": "Archive",
-            "query_template": "encounter_document",
-            "action": "Pass",
-            "parameters": {"encounter_number": "_transaction_id"},
+            "query_template": "encounter_documents_query",
+            "action": "Update",
+            "defaults": {},
+            "parameters": {},
             "actions": [
-              {"data_item_class"}
+              {"name": "Insert",
+                "data_item_class": "encounter_document"}
             ]
-
           }
         ],
         "data_items": {
@@ -80,7 +82,7 @@
                 {
                   "name": "Insert",
                   "query_template": "person_query",
-                  "parameters": {}
+                  "parameters": {"encounter_number": "_transaction_id"}
                 }
               ]
             },
@@ -90,7 +92,7 @@
                 {
                   "name": "Insert",
                   "query_template": "encounter_document_query",
-                  "parameters": {}
+                  "parameters": {"encounter_number": "_transaction_id"}
                 }
               ]
             }
@@ -117,8 +119,13 @@
     },
     {
       "name": "encounter_document_query",
-      "template": "select * from encounter_docuement where encounter_number = :encounter_number",
+      "template": "select encounter_number, content as text_content from encounter_documents where encounter_number = :encounter_number",
       "parameter_list": ["encounter_number"]
+    },
+    {
+      "name": "encounter_documents_query",
+      "template": "select  encounter_number as transaction_id from encounter_documents",
+      "parameter_list": []
     },
     {
       "name": "person_query",

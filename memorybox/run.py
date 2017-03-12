@@ -133,6 +133,12 @@ class MemoryBoxRunner(object):
                     data += [self._convert_row_to_json(row)]
                 data_item_dict["data"] = data
 
+            elif data_item_type_name == "Text":
+                text_str = ""
+                for row in cursor:
+                    text_str += row.text_content
+                data_item_dict["text"] = text_str
+
             #TODO: Add support for other types
             data_item_obj.insert_struct(data_item_dict)
 
@@ -160,7 +166,6 @@ class MemoryBoxRunner(object):
             if query_template_id is not None:
                 query_template_result = query_template_obj.find_by_id(query_template_id)
                 query_parameters = self.query_parameters_obj.generate(parameters)
-
             else:
                 query_parameters = None
 
@@ -188,7 +193,8 @@ class MemoryBoxRunner(object):
                     if query_template_result is not None:
                         source_cursor = self.source_connection.execute(query_template_result.template, **query_parameters)
                         for row in source_cursor:
-                            transaction_id_dict[row.transaction_id] = 1
+                            transaction_id_dict[str(row.transaction_id)] = 1
+
                 else:
                     transaction_id_dict = None
 
@@ -201,6 +207,7 @@ class MemoryBoxRunner(object):
 
                     if transaction_id_dict is not None:
                         if transaction_id in transaction_id_dict:
+
                             data_item_updates = 1
                     else:
                         data_item_updates = 1
