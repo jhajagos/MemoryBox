@@ -1,0 +1,1 @@
+select * from encounter_procedure where encounter_number = :encounter_number
