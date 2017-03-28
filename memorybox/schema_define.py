@@ -58,6 +58,7 @@ def schema_define(meta_data):
                         Column("created_at", DateTime),
                         Column("updated_at", DateTime))
 
+    #TODO: add a flag for latest indicator
     track_item_updates = Table("track_item_updates", meta_data,
                                Column("id", Integer, primary_key=True),
                                Column("track_item_id", ForeignKey("track_items.id")),
