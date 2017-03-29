@@ -4,6 +4,7 @@ import os
 import json
 import csv
 
+
 def get_db_connection(config_dict, reflect_db=True):
     """Connect to the PostgreSQL database"""
     engine = sa.create_engine(config_dict["connection_uri"])
@@ -11,6 +12,7 @@ def get_db_connection(config_dict, reflect_db=True):
     meta_data = sa.MetaData(connection, schema=config_dict["db_schema"], reflect=reflect_db)
 
     return connection, meta_data
+
 
 def main(connection, meta_data, memory_box_name, item_class_name, data_item_class_name, state_name, file_name):
 
@@ -31,14 +33,14 @@ from %(schema)s.track_items ti
     sql_parameters = {"memory_box_name": memory_box_name, "item_class_name": item_class_name,
                       "data_item_class_name": data_item_class_name, "state_name": state_name}
 
-    cursor = connection.execute(query_string + " limit 1", sql_parameters)
+    cursor = connection.execute(sa.text(query_string + " limit 1"), **sql_parameters)
     top_row_list = list(cursor)
     if len(top_row_list):
         top_row = top_row_list[0]
 
     memory_box_fields = top_row.keys()
     top_row_data = top_row.data
-    top_row_fields = top_row_data.keys()
+    top_row_fields = top_row_data[0].keys()
     top_row_fields.sort()
 
     header = top_row_fields
@@ -47,7 +49,7 @@ from %(schema)s.track_items ti
 
         csv_writer = csv.writer(fw)
         csv_writer.writerow(top_row_fields)
-        cursor = connection.execute(query_string, sql_parameters)
+        cursor = connection.execute(sa.text(query_string), **sql_parameters)
         for row in cursor:
             data = row.data
             for data_item in data:
@@ -58,7 +60,7 @@ from %(schema)s.track_items ti
 
 
 arg_parse_obj = argparse.ArgumentParser(
-    description="Exports out a tracked item")
+    description="Exports out a tracked item into a CSV file")
 
 arg_parse_obj.add_argument("-c", "--config-json-filename", dest="config_json_filename",
                            help="JSON configuration file: see './test/testing_config.json.example'",
@@ -67,10 +69,10 @@ arg_parse_obj.add_argument("-c", "--config-json-filename", dest="config_json_fil
 arg_parse_obj.add_argument("-m", "--memory-box-name", dest="memory_box_name", default=None)
 
 
-arg_parse_obj.add_argument("-n", "--item-name", dest="item_name", default=None,
-                           help="Name of target item")
+arg_parse_obj.add_argument("-n", "--item-class-name", dest="item_class_name", default=None,
+                           help="")
 
-arg_parse_obj.add_argument("-d", "--data-item-name", dest="data_item_name", default=None,
+arg_parse_obj.add_argument("-d", "--data-item-name", dest="data_item_class_name", default=None,
                            help="")
 
 arg_parse_obj.add_argument("-s", "--state-name", dest="state_name", default=None,
