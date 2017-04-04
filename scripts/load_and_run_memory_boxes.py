@@ -94,6 +94,11 @@ def main():
     arg_parse_obj.add_argument("-r", "--run-memory-box-item", action="store_true", dest="run_memory_box_item",
                                help="Track an item that has been defined in a memory box")
 
+    arg_parse_obj.add_argument("--debug-mode", action="store_true", dest="debug_mode", default=False,
+                               help="Disables rollback of transactions")
+
+    #TODO: fully implement rollback on errors setable by debug_mode flag
+
     arg_obj = arg_parse_obj.parse_args()
 
     config_json_filename = arg_obj.config_json_filename
@@ -144,8 +149,17 @@ def main():
         print("Updating")
 
         connection, meta_data = get_db_connection(config_dict, reflect_db=True)
-        memory_box_runner = MemoryBoxRunner(arg_obj.memory_box_name, connection, meta_data, config_dict["data_connections"])
-        memory_box_runner.run(arg_obj.item_name)
+
+        trans = connection.begin()
+
+        try:
+            memory_box_runner = MemoryBoxRunner(arg_obj.memory_box_name, connection, meta_data, config_dict["data_connections"])
+            memory_box_runner.run(arg_obj.item_name)
+            trans.commit()
+        except:
+            if not arg_obj.debug_mode:
+                trans.rollback()
+            raise
 
 
 if __name__ == "__main__":
