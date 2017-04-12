@@ -33,22 +33,28 @@ from %(schema)s.track_items ti
     sql_parameters = {"memory_box_name": memory_box_name, "item_class_name": item_class_name,
                       "data_item_class_name": data_item_class_name, "state_name": state_name}
 
-    cursor = connection.execute(sa.text(query_string + " limit 1"), **sql_parameters)
-    top_row_list = list(cursor)
-    if len(top_row_list):
-        top_row = top_row_list[0]
+    cursor = connection.execute(sa.text(query_string), **sql_parameters)
+    field_list = []
 
-    memory_box_fields = top_row.keys()
-    top_row_data = top_row.data
-    top_row_fields = top_row_data[0].keys()
-    top_row_fields.sort()
+    for row in cursor:
+        if row.data is not None:
+            if row.data.__class__ != [].__class__:
+                data_elements = [row.data]
+            else:
+                data_elements = row.data
+                
+            for element in data_elements:
+                for field in element.keys():
+                    if field not in field_list:
+                        field_list += [field]
 
-    header = top_row_fields
+    field_list.sort()
+    header = field_list
 
     with open(file_name, 'wb') as fw:
 
         csv_writer = csv.writer(fw)
-        csv_writer.writerow(top_row_fields)
+        csv_writer.writerow(header)
         cursor = connection.execute(sa.text(query_string), **sql_parameters)
         for row in cursor:
             data = row.data
