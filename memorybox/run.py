@@ -98,13 +98,14 @@ class MemoryBoxRunner(object):
     #     return {"lower_discharge_date_time": self._odbc_date_to_datetime("2016-09-30"), "upper_discharge_date_time": self._odbc_date_to_datetime("2016-11-01")}
 
     def _update_data_items(self, track_item_id, state_id, data_item_actions):
-        "Update data items"
+        """Update data items"""
 
         track_item_obj = TrackItems(self.connection, self.meta_data)
         track_item_result = track_item_obj.find_by_id(track_item_id)
         transaction_id = track_item_result.transaction_id
         track_item_update_obj = TrackItemUpdates(self.connection, self.meta_data)
         data_item_obj = DataItems(self.connection, self.meta_data)
+
         track_item_update_struct = {"track_item_id": track_item_id, "state_id": state_id,
                                     "created_at": datetime.datetime.utcnow()}
         track_item_update_id = track_item_update_obj.insert_struct(track_item_update_struct)

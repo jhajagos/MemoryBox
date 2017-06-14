@@ -14,7 +14,7 @@ def get_db_connection(config_dict, reflect_db=True):
     return connection, meta_data
 
 
-def main(connection, meta_data, memory_box_name, item_class_name, data_item_class_name, state_name, file_name):
+def main(connection, meta_data, memory_box_name, item_class_name, data_item_class_name, state_name, state_name_data, file_name):
 
     schema_dict = {"schema": meta_data.schema}
 
@@ -23,15 +23,18 @@ def main(connection, meta_data, memory_box_name, item_class_name, data_item_clas
 from %(schema)s.track_items ti 
   join %(schema)s.item_classes ic on ic.id = ti.item_class_id
   join %(schema)s.memory_boxes mb on mb.id = ic.memory_box_id
-  join %(schema)s.states s ON s.id = ti.state_id
-  join %(schema)s.track_item_updates itu on itu.track_item_id = ti.id and itu.state_id = s.id
+  join %(schema)s.states s1 ON s1.id = ti.state_id
+  join %(schema)s.track_item_updates itu on itu.track_item_id = ti.id
+  join %(schema)s.states s2 on itu.state_id = s2.id
   join %(schema)s.data_items di on di.track_item_update_id = itu.id
   join %(schema)s.data_item_classes dic on dic.id = di.data_item_class_id
-  where s.name = :state_name and dic.name = :data_item_class_name and mb.name = :memory_box_name and ic.name = :item_class_name
+  where s1.name = :state_name and s2.name = :state_name_data and dic.name = :data_item_class_name and mb.name = :memory_box_name and ic.name = :item_class_name
   order by ti.transaction_id desc, dic.id""" % schema_dict
 
     sql_parameters = {"memory_box_name": memory_box_name, "item_class_name": item_class_name,
-                      "data_item_class_name": data_item_class_name, "state_name": state_name}
+                      "data_item_class_name": data_item_class_name, "state_name": state_name,
+                      "state_name_data": state_name_data
+                      }
 
     cursor = connection.execute(sa.text(query_string), **sql_parameters)
     field_list = []
@@ -82,7 +85,10 @@ arg_parse_obj.add_argument("-d", "--data-item-name", dest="data_item_class_name"
                            help="")
 
 arg_parse_obj.add_argument("-s", "--state-name", dest="state_name", default=None,
-                           help="")
+                           help="This is the current state of the item that you want to export")
+
+arg_parse_obj.add_argument("-t", "--state-name-data", dest="state_name_data", default=None,
+                           help="This is the state of the item when the data was extracted")
 
 arg_parse_obj.add_argument("-f", "--file-name", dest="file_name", default=None,
                            help="")
@@ -99,4 +105,10 @@ with open(config_json_filename, "r") as f:
 
 connection, meta_data = get_db_connection(config_dict)
 
-main(connection, meta_data, arg_obj.memory_box_name, arg_obj.item_class_name, arg_obj.data_item_class_name, arg_obj.state_name, arg_obj.file_name)
+if arg_obj.state_name_data is None:
+    state_name_data = arg_obj.state_name
+else:
+    state_name_data = arg_obj.state_name_data
+
+main(connection, meta_data, arg_obj.memory_box_name, arg_obj.item_class_name, arg_obj.data_item_class_name,
+     arg_obj.state_name, arg_obj.state_name_data, arg_obj.file_name)
