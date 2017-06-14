@@ -18,8 +18,9 @@ def main(connection, meta_data, memory_box_name, item_class_name, data_item_clas
 
     schema_dict = {"schema": meta_data.schema}
 
-    query_string = """select ti.id as track_item_id, ti.item_class_id, ti.transaction_id, ti.state_id, s.name as state_name,
-  di.id as data_item_id, di.data_item_class_id, dic.name as data_item_clas_name, data
+    query_string = """select ti.id as track_item_id, ti.item_class_id, ti.transaction_id, ti.state_id, s1.name as state_name,
+    s2.name as data_state_name,
+    di.id as data_item_id, di.data_item_class_id, dic.name as data_item_clas_name, data
 from %(schema)s.track_items ti 
   join %(schema)s.item_classes ic on ic.id = ti.item_class_id
   join %(schema)s.memory_boxes mb on mb.id = ic.memory_box_id
