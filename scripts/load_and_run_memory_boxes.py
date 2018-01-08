@@ -168,6 +168,9 @@ def main():
                 raise
 
         else:
+
+            print("Running with no transactions")
+
             memory_box_runner = MemoryBoxRunner(arg_obj.memory_box_name, connection, meta_data,
                                                 config_dict["data_connections"])
             memory_box_runner.run(arg_obj.item_name)
