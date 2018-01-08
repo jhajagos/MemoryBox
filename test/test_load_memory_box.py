@@ -34,7 +34,6 @@ class TestLoadMemoryBox(unittest.TestCase):
         # Add additional tests
 
 
-
 if __name__ == '__main__':
     unittest.main()
 

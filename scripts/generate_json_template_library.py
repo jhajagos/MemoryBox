@@ -30,10 +30,12 @@ def main():
         template_library_dict = {}
         for template_file in template_file_list:
 
+
             full_template_filename = os.path.abspath(template_file)
             normalized_directory, template_filename = os.path.split(full_template_filename)
 
             template_name, ext = os.path.splitext(template_filename)
+            print("Reading '%s' for template '%s'" % (template_file, template_name))
 
             with open(full_template_filename, "r") as f:
                 template_content = f.read()
@@ -42,7 +44,7 @@ def main():
 
         print("Writing file '%s'" % full_out_json_filename)
         with open(out_json_filename, "w") as fw:
-            json.dump(template_library_dict, fw)
+            json.dump(template_library_dict, fw, indent=4, separators=(", ", ": "), sort_keys=True)
 
 
 if __name__ == "__main__":

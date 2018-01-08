@@ -97,6 +97,10 @@ def main():
     arg_parse_obj.add_argument("--debug-mode", action="store_true", dest="debug_mode", default=False,
                                help="Disables rollback of transactions")
 
+    arg_parse_obj.add_argument("--no-transactions", action="store_true", dest="no_transactions", default=False,
+                               help="Do not use transactions on update"
+                               )
+
     #TODO: fully implement rollback on errors setable by debug_mode flag
 
     arg_obj = arg_parse_obj.parse_args()
@@ -152,14 +156,21 @@ def main():
 
         trans = connection.begin()
 
-        try:
-            memory_box_runner = MemoryBoxRunner(arg_obj.memory_box_name, connection, meta_data, config_dict["data_connections"])
+        if not arg_obj.no_transactions:
+
+            try:
+                memory_box_runner = MemoryBoxRunner(arg_obj.memory_box_name, connection, meta_data, config_dict["data_connections"])
+                memory_box_runner.run(arg_obj.item_name)
+                trans.commit()
+            except:
+                if not arg_obj.debug_mode:
+                    trans.rollback()
+                raise
+
+        else:
+            memory_box_runner = MemoryBoxRunner(arg_obj.memory_box_name, connection, meta_data,
+                                                config_dict["data_connections"])
             memory_box_runner.run(arg_obj.item_name)
-            trans.commit()
-        except:
-            if not arg_obj.debug_mode:
-                trans.rollback()
-            raise
 
 
 if __name__ == "__main__":
