@@ -165,6 +165,7 @@ def main():
             except:
                 if not arg_obj.debug_mode:
                     trans.rollback()
+                trans.commit()
                 raise
 
         else:
