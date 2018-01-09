@@ -66,7 +66,10 @@ class MemoryBoxRunner(object):
             if data_value.__class__  in (int, float):
                 row_dict[column] = data_value
             else:
-                row_dict[column] = str(data_value)
+                string_value = str(data_value)
+                if u"\u0000" in string_value:
+                   string_value = " ".join(string_value.split(u"\u0000"))
+                row_dict[column] = string_value.rstrip() 
 
         return row_dict
 
