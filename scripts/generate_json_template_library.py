@@ -30,7 +30,6 @@ def main():
         template_library_dict = {}
         for template_file in template_file_list:
 
-
             full_template_filename = os.path.abspath(template_file)
             normalized_directory, template_filename = os.path.split(full_template_filename)
 
