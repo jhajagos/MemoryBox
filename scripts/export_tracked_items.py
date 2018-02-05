@@ -14,9 +14,10 @@ def get_db_connection(config_dict, reflect_db=True):
     return connection, meta_data
 
 
-def main(connection, meta_data, memory_box_name, item_class_name, data_item_class_name, state_name, state_name_data, file_name):
+def main(connection, meta_data, memory_box_name, item_class_name, data_item_class_name, state_name, state_name_data,
+         file_name, look_back_until_date="2000-01-01"):
 
-    schema_dict = {"schema": meta_data.schema}
+    schema_dict = {"schema": meta_data.schema, "look_back_until_date": look_back_until_date}
 
     query_string = """select ti.id as track_item_id, ti.item_class_id, ti.transaction_id, ti.state_id, s1.name as state_name,
     s2.name as data_state_name,
@@ -30,6 +31,7 @@ from %(schema)s.track_items ti
   join %(schema)s.data_items di on di.track_item_update_id = itu.id
   join %(schema)s.data_item_classes dic on dic.id = di.data_item_class_id
   where s1.name = :state_name and s2.name = :state_name_data and dic.name = :data_item_class_name and mb.name = :memory_box_name and ic.name = :item_class_name
+    and ti.created_at >= '%(look_back_until_date)s'
   order by ti.transaction_id desc, dic.id""" % schema_dict
 
     sql_parameters = {"memory_box_name": memory_box_name, "item_class_name": item_class_name,
@@ -94,6 +96,7 @@ arg_parse_obj.add_argument("-t", "--state-name-data", dest="state_name_data", de
 arg_parse_obj.add_argument("-f", "--file-name", dest="file_name", default=None,
                            help="")
 
+arg_parse_obj.add_argument("-l", "--look-back-until-date", dest="look_back_until_date", default="2000-01-01")
 
 arg_obj = arg_parse_obj.parse_args()
 
@@ -112,4 +115,4 @@ else:
     state_name_data = arg_obj.state_name_data
 
 main(connection, meta_data, arg_obj.memory_box_name, arg_obj.item_class_name, arg_obj.data_item_class_name,
-     arg_obj.state_name, arg_obj.state_name_data, arg_obj.file_name)
+     arg_obj.state_name, arg_obj.state_name_data, arg_obj.file_name, arg_obj.look_back_until_date)
