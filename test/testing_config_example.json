@@ -3,5 +3,7 @@
     "db_schema": "memorybox",
     "root_file_path": "./test/",
     "data_connections":
-        {"encounters": "sqlite3:///.files/encounters.db3"}
+        {"encounters": "sqlite:///.files/encounters.db3",
+         "ehr_warehouse": "sqlite:///./files/test_encounter.db3"
+        }
 }
