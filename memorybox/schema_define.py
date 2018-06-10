@@ -84,15 +84,15 @@ def schema_define(meta_data):
     data_item_actions_transitions_state_items = Table("data_item_actions_transition_state_items", meta_data,
                                            Column("id", Integer, primary_key=True),
                                            Column("data_item_class_action_id", ForeignKey("data_item_class_actions.id")),
-                                           Column("transition_state_item_class_id", ForeignKey("transition_state_item_classes.id")))
-
-
+                                           Column("transition_state_item_class_id",
+                                                  ForeignKey("transition_state_item_classes.id")))
 
     data_items = Table("data_items", meta_data,
                        Column("id", Integer, primary_key=True),
                        Column("data", JSONB),
                        Column("text", Text),
                        Column("base64_binary_file_content", Text),
+                       Column("sha1", Text),
                        Column("data_item_class_id", ForeignKey("data_item_classes.id")),
                        Column("data_item_type_id", ForeignKey("data_item_types.id")),
                        Column("track_item_update_id", ForeignKey("track_item_updates.id")),
@@ -132,13 +132,13 @@ def create_and_populate_schema(connection, meta_data, drop_all=True):
     data_item_types = [(1, "JSON"), (2, "Text"), (3, "Base64")]
     populate_reference_table(table_dict["data_item_types"], connection, meta_data, data_item_types)
 
-    states = [(1, "Start"), (2, "Stop"), (3, "Watch"), (4, "Archive"), (5, "New")]
+    states = [(1, "Start"), (2, "Stop"), (3, "Watch"), (4, "Archive"), (5, "New"), (6, "Changed")]
     populate_reference_table(table_dict["states"], connection,  meta_data, states)
 
     data_connection_types = [(1, None, "Relational database"), (2, 1, "SQLite"), (3, 1, "PostGreSQL"), (4, 1, "Oracle")]
     populate_reference_table(table_dict["data_connection_types"], connection,  meta_data, data_connection_types)
 
-    actions = [(1, "Pass"), (2, "Insert"), (3, "Insert new"), (4, "Update")]
+    actions = [(1, "Pass"), (2, "Insert"), (3, "Insert new"), (4, "Update"), (5, "Check if changed"), (6, "Aged out")]
     populate_reference_table(table_dict["actions"],  connection, meta_data, actions)
 
     return meta_data, table_dict

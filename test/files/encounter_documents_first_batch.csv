@@ -1,2 +1,3 @@
 encounter_number,document_type,document_date,content
 1008881013,Text,"2016-10-04",This is a silly message.
+1008881002,Text,"2016-10-01",This message will not change.

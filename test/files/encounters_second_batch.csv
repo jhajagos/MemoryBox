@@ -1,1 +1,4 @@
 encounter_number,pseudo_mrn,admit_date_time,discharge_date_time,admit_type,admit_source
+1008881003,GM5557,2016-11-02 22:35,2016-12-02 12:30,emergency,home
+1008881012,GM5558,2016-11-05 23:35,2016-12-02 12:30,emergency,home
+1008881002,K9876,2016-10-01,2016-10-15,emergency,transfer

@@ -37,7 +37,8 @@ class RunMemoryBox(unittest.TestCase):
                                                                   source_connection, source_meta_data
                                                                   )
 
-        # Create a fresh memory box database in a schema
+        self.source_connection = source_connection
+        self.source_meta_data = source_meta_data
 
         with open("testing_config.json", "r") as f:
             config = json.load(f)
@@ -50,13 +51,12 @@ class RunMemoryBox(unittest.TestCase):
 
             schema_define.create_and_populate_schema(self.connection, self.meta_data, )
 
-        with open("./files/encounter_memory_box_test_load.json") as f:
+        with open("./files/encounter_memory_box_changed.json") as f:
             self.memory_box_struct = json.load(f)
             self.mbox_load_obj = MemoryBoxLoader(self.memory_box_struct, self.connection, self.meta_data)
             self.mbox_load_obj.load_into_db()
 
     def test_run_memory_box(self):
-
         self.memory_box_runner = MemoryBoxRunner("encounter", self.connection, self.meta_data, self.data_connections)
 
         cursor1 = self.connection.execute("select * from %s.track_items" % self.meta_data.schema)
@@ -66,6 +66,21 @@ class RunMemoryBox(unittest.TestCase):
 
         cursor2 = self.connection.execute("select * from %s.track_items" % self.meta_data.schema)
         self.assertTrue(len(list(cursor2)))
+
+        self.source_connection.execute("delete from encounter_documents")
+        self.source_connection.execute("delete from encounters")
+
+        self.number_of_second_encounters = load_csv_into_database("encounters",
+                                                                  "./files/encounters_second_batch.csv",
+                                                                  self.source_connection, self.source_meta_data
+                                                                  )
+
+        self.number_of_second_documents = load_csv_into_database("encounter_documents",
+                                                                  "./files/encounter_documents_second_batch.csv",
+                                                                  self.source_connection, self.source_meta_data
+                                                                 )
+
+        self.memory_box_runner.run("discharges")
 
 
 if __name__ == '__main__':

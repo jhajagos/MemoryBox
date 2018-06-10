@@ -168,8 +168,8 @@ class TrackItems(DBClass):
 
     def find_by_transaction_id(self, transaction_id, item_class_id):
         sql_query_dict = {"transaction_id": transaction_id, "item_class_id": item_class_id, "schema": self.meta_data.schema}
-        cursor = self.connection.execute(
-            "select * from %(schema)s.track_items where transaction_id = '%(transaction_id)s' and item_class_id = %(item_class_id)s" % sql_query_dict)
+        cursor = self.connection.execute("""select * from %(schema)s.track_items 
+                  where transaction_id = '%(transaction_id)s' and item_class_id = %(item_class_id)s""" % sql_query_dict)
 
         return list(cursor)
 
@@ -184,6 +184,18 @@ class TrackItems(DBClass):
 class TrackItemUpdates(DBClass):
     def _table_name(self):
         return "track_item_updates"
+
+    def find_latest_update(self, track_item_id, state_id):
+
+        sql_query_dict = {"track_item_id": track_item_id, "state_id": state_id, "schema": self.meta_data.schema}
+
+        query_string = """select max(id) as latest_track_item_update_id from %(schema)s.track_item_updates tiu 
+                where track_item_id = %(track_item_id)s and state_id = %(state_id)s
+                group by track_item_id, state_id """ % sql_query_dict
+
+        cursor = self.connection.execute(query_string)
+
+        return cursor
 
 
 class QueryTemplates(DBClass):
