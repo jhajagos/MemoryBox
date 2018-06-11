@@ -115,7 +115,8 @@ class MemoryBoxRunner(object):
 
         track_item_update_struct = {"track_item_id": track_item_id,
                                     "state_id": state_id,
-                                    "created_at": datetime.datetime.utcnow()}
+                                    "created_at": datetime.datetime.utcnow()
+                                    }
 
         track_item_update_id = track_item_update_obj.insert_struct(track_item_update_struct)
 
@@ -182,7 +183,6 @@ class MemoryBoxRunner(object):
         track_item_update_obj = TrackItemUpdates(self.connection, self.meta_data)
         data_item_obj = DataItems(self.connection, self.meta_data)
         state_obj = States(self.connection, self.meta_data)
-        data_item_type_obj = DataItemTypes(self.connection, self.meta_data)
 
         transitions = transition_state_obj.find_transitions_for_memory_box(self.memory_box, item_class_name)
 
@@ -247,7 +247,6 @@ class MemoryBoxRunner(object):
 
                     data_items_cursor = data_item_obj.find_by_track_item_update_id(latest_track_item_update_id)
 
-
                     past_data_items_to_compare = list(data_items_cursor)
 
                     current_data_items_to_compare = self._update_data_items(track_item_id, to_state_id,
@@ -276,7 +275,7 @@ class MemoryBoxRunner(object):
 
                         for current_data_item in current_data_items_to_compare:
                             data_item_obj.insert_struct(current_data_item)
-                        track_item_obj.update_struct(track_item_id, {"state_id": to_state_id})
+                        track_item_obj.update_struct(track_item_id, {"state_id": to_state_id, "updated_at": datetime.datetime.utcnow()})
 
 
             else:  # Handle other transitions by trigger or time elapsed / age out
@@ -289,9 +288,57 @@ class MemoryBoxRunner(object):
                         for row in source_cursor:
                             transaction_id_dict[str(row.transaction_id)] = 1
 
+                elif action_name == "Missing": # If transaction_id is missing age it out
+                    transaction_id_dict = {}
 
-                elif action_name == "Aged out":  # Update if the items have changed
-                    pass
+                    cursor = track_item_obj.find_by_from_state_id(from_state_id, item_class_id)
+                    state_transaction_id_dict = {}
+                    for row in cursor:
+                        state_transaction_id_dict[str(row.transaction_id)] = 1
+
+                    source_cursor = self.source_connection.execute(query_template_result.template,
+                                                                     **query_parameters)
+
+                    source_transaction_id_dict = {}
+                    for row in source_cursor:
+                        source_transaction_id_dict[str(row.transaction_id)] = 1
+
+                    transaction_id_dict = {}
+                    for state_transaction_id in state_transaction_id_dict:
+                        if state_transaction_id not in source_transaction_id_dict:
+                            transaction_id_dict[state_transaction_id] = 1
+
+                elif action_name == "Aged out":  # Update if item is greater than a certain age
+
+                    time_unit = parameters["unit"]
+                    numeric_value = parameters["value"]
+
+                    # Support time units are 'days', 'hours', 'seconds'
+
+                    if time_unit == "days":
+                        age_out_time_delta = datetime.timedelta(days=numeric_value)
+                    elif time_unit == "seconds":
+                        age_out_time_delta = datetime.timedelta(seconds=numeric_value)
+                    elif time_unit == "hours":
+                        age_out_time_delta = datetime.timedelta(hours=numeric_value)
+                    else:
+                        raise(RuntimeError)
+
+                    cursor = track_item_obj.find_by_from_state_id(from_state_id, item_class_id)
+                    # print(from_state_id, item_class_id)
+                    transaction_id_dict = {}
+                    # import pprint
+                    # pprint.pprint(list(self.connection.execute("select * from %s.track_items" % self.meta_data.schema)))
+
+                    for row in cursor:
+
+                        current_utc_time = datetime.datetime.utcnow()
+                        current_age = current_utc_time - row.created_at
+
+                        if current_age > age_out_time_delta:
+                            # print(current_age)
+                            transaction_id_dict[str(row.transaction_id)] = 1
+
                 else:
                     transaction_id_dict = None
 
@@ -310,5 +357,5 @@ class MemoryBoxRunner(object):
 
                     if data_item_updates:
                         self._update_data_items(track_item_id, to_state_id, data_item_transitions_to_process)
-                        track_item_obj.update_struct(track_item_id, {"state_id": to_state_id})
+                        track_item_obj.update_struct(track_item_id, {"state_id": to_state_id, "updated_at": datetime.datetime.utcnow()})
 

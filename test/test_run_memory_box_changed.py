@@ -6,7 +6,7 @@ import os
 import json
 from memorybox.load import MemoryBoxLoader
 from memorybox.run import MemoryBoxRunner
-
+import time
 
 class RunMemoryBox(unittest.TestCase):
 
@@ -76,8 +76,8 @@ class RunMemoryBox(unittest.TestCase):
                                                                   )
 
         self.number_of_second_documents = load_csv_into_database("encounter_documents",
-                                                                  "./files/encounter_documents_second_batch.csv",
-                                                                  self.source_connection, self.source_meta_data
+                                                                 "./files/encounter_documents_second_batch.csv",
+                                                                 self.source_connection, self.source_meta_data
                                                                  )
 
         self.memory_box_runner.run("discharges")
@@ -95,6 +95,10 @@ class RunMemoryBox(unittest.TestCase):
 
         self.memory_box_runner.run("discharges")
 
+        print("Sleeping")
+        time.sleep(1) # Test age out
+
+        self.memory_box_runner.run("discharges")
 
 
 if __name__ == '__main__':

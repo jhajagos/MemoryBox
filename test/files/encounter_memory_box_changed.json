@@ -30,6 +30,23 @@
           },
           {
             "from": "Watch",
+            "to": "Archive",
+            "query_template": "simple_discharge_query",
+            "action": "Missing",
+            "parameters": {},
+            "defaults": {}
+          },
+          {
+            "from": "Watch",
+            "to": "Archive",
+            "query_template": null,
+            "action": "Aged out",
+            "defaults": {},
+            "parameters": {"unit": "seconds", "value": 0.5},
+            "actions": []
+          },
+          {
+            "from": "Watch",
             "to": "Changed",
             "query_template": null,
             "action": "Check if changed",
@@ -53,15 +70,6 @@
             "action": "Pass",
             "parameters": {},
             "defaults": {},
-            "actions": []
-          },
-          {
-            "from": "Archive",
-            "to": "Archive",
-            "query_template": null,
-            "action": "Aged out",
-            "defaults": {},
-            "parameters": {"maximum_age": {"unit": "days", "value": 1.0}},
             "actions": []
           },
           {
@@ -126,6 +134,11 @@
       "name": "discharge_query",
       "template": "select encounter_number as transaction_id from encounters where discharge_date_time is not null and discharge_date_time >= :lower_discharge_date_time and discharge_date_time < :upper_discharge_date_time",
       "parameter_list": ["lower_discharge_date_time", "upper_discharge_date_time"]
+    },
+    {
+      "name": "simple_discharge_query",
+      "template": "select encounter_number as transaction_id from encounters",
+      "parameter_list": []
     },
     {
       "name": "encounter_detail_query",
