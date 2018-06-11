@@ -51,7 +51,7 @@
             "query_template": null,
             "action": "Check if changed",
             "defaults": {},
-            "parameters": {"state_to_compare_to": "New"},
+            "parameters": {"state_to_compare_to": ["Changed", "New"]},
             "actions": [
                {
                 "name": "Insert",

@@ -236,12 +236,28 @@ class MemoryBoxRunner(object):
 
                     state_to_compare_to = parameters["state_to_compare_to"]
 
-                    state_dict = state_obj.find_by_name(state_to_compare_to)
+                    if state_to_compare_to.__class__ == [].__class__:  # We need to provide a precedence list for states
+                        state_ids_to_compare_to = []
+                        for state_name in state_to_compare_to:
+                            state_dict = state_obj.find_by_name(state_name)
+                            state_id_to_compare_to = state_dict["id"]
+                            state_ids_to_compare_to += [state_id_to_compare_to]
 
-                    state_id_to_compare = state_dict["id"]
+                    else:
+                        state_dict = state_obj.find_by_name(state_to_compare_to)
+                        state_id_to_compare_to = state_dict["id"]
+                        state_ids_to_compare_to = [state_id_to_compare_to]
 
-                    cursor = track_item_update_obj.find_latest_update(track_item_id, state_id_to_compare)
-                    latest_track_item_update_id = list(cursor)[0][0]
+                    i = 0
+                    while True:
+                        c_state_id_to_compare_to = state_ids_to_compare_to[i]
+                        cursor = track_item_update_obj.find_latest_update(track_item_id, c_state_id_to_compare_to)
+                        result_list = list(cursor)
+                        if len(result_list):
+                            latest_track_item_update_id = result_list[0][0]
+                            break
+
+                        i += 1
 
                     # For each data item check if it has changed
 
