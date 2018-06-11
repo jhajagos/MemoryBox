@@ -68,12 +68,12 @@ class RunMemoryBox(unittest.TestCase):
         self.assertTrue(len(list(cursor2)))
 
         self.source_connection.execute("delete from encounter_documents")
-        #self.source_connection.execute("delete from encounters")
+        self.source_connection.execute("delete from encounters")
 
-        # self.number_of_second_encounters = load_csv_into_database("encounters",
-        #                                                           "./files/encounters_second_batch.csv",
-        #                                                           self.source_connection, self.source_meta_data
-        #                                                           )
+        self.number_of_second_encounters = load_csv_into_database("encounters",
+                                                                  "./files/encounters_second_batch.csv",
+                                                                  self.source_connection, self.source_meta_data
+                                                                  )
 
         self.number_of_second_documents = load_csv_into_database("encounter_documents",
                                                                   "./files/encounter_documents_second_batch.csv",
@@ -81,6 +81,20 @@ class RunMemoryBox(unittest.TestCase):
                                                                  )
 
         self.memory_box_runner.run("discharges")
+
+        self.source_connection.execute("delete from encounters")
+        self.source_connection.execute("delete from encounter_documents")
+
+        self.number_of_third_encounters = load_csv_into_database("encounters",
+                                                                 "./files/encounters_third_batch.csv",
+                                                                 self.source_connection, self.source_meta_data)
+
+        self.number_of_third_documents = load_csv_into_database("encounter_documents",
+                                                                 "./files/encounter_documents_third_batch.csv",
+                                                                 self.source_connection, self.source_meta_data)
+
+        self.memory_box_runner.run("discharges")
+
 
 
 if __name__ == '__main__':

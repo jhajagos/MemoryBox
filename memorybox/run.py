@@ -244,13 +244,15 @@ class MemoryBoxRunner(object):
                     latest_track_item_update_id = list(cursor)[0][0]
 
                     # For each data item check if it has changed
-                    track_item_update_dict = track_item_update_obj.find_by_id(latest_track_item_update_id)
 
                     data_items_cursor = data_item_obj.find_by_track_item_update_id(latest_track_item_update_id)
-                    has_changed = 0
+
 
                     past_data_items_to_compare = list(data_items_cursor)
-                    current_data_items_to_compare = self._update_data_items(track_item_id, to_state_id, data_item_transitions_to_process, insert=False)
+
+                    current_data_items_to_compare = self._update_data_items(track_item_id, to_state_id,
+                                                                            data_item_transitions_to_process,
+                                                                            insert=False)
 
                     past_data_item_sha1_dict = {}
                     for past_data_item in past_data_items_to_compare:
@@ -261,18 +263,17 @@ class MemoryBoxRunner(object):
                         current_data_item_sha1_dict[current_data_item["data_item_type_id"]] = current_data_item["sha1"]
 
                     has_changed = False  # Here we compare if the current data items have changed
+
                     for key in current_data_item_sha1_dict:
                         current_sha1 = current_data_item_sha1_dict[key]
+
                         past_sha1 = past_data_item_sha1_dict[key]
 
                         if current_sha1 != past_sha1:
                             has_changed = True
 
                     if has_changed:  # If it has changed we commit the changes and update the state
-                        print("")
-                        print(past_data_items_to_compare)
-                        print(current_data_items_to_compare)
-                        print("")
+
                         for current_data_item in current_data_items_to_compare:
                             data_item_obj.insert_struct(current_data_item)
                         track_item_obj.update_struct(track_item_id, {"state_id": to_state_id})
