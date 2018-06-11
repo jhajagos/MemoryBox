@@ -43,14 +43,20 @@
             "query_template": null,
             "action": "Check if changed",
             "defaults": {},
-            "parameters": {},
+            "parameters": {"state_to_compare_to": "New"},
             "actions": [
-              {"name": "Insert",
-                "data_item_class": "encounter_document"}
+               {
+                "name": "Insert",
+                "data_item_class": "encounter_detail"
+              },
+              {
+                "name": "Insert",
+                "data_item_class": "encounter_document"
+              }
             ]
           },
           {
-            "from": "Watch",
+            "from": "Archive",
             "to": "Archive",
             "query_template": null,
             "action": "Aged out",

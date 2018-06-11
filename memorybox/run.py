@@ -99,8 +99,13 @@ class MemoryBoxRunner(object):
 
         return list(self.connection.execute(sql_query))
 
-    def _update_data_items(self, track_item_id, state_id, data_item_actions):
+    def _update_data_items(self, track_item_id, state_id, data_item_actions, insert=True):
         """Update data items"""
+
+        if insert:
+            result_cache = None
+        else:
+            result_cache = []
 
         track_item_obj = TrackItems(self.connection, self.meta_data)
         track_item_result = track_item_obj.find_by_id(track_item_id)
@@ -131,7 +136,12 @@ class MemoryBoxRunner(object):
             data_item_dict = self._generate_data_item_dict(cursor, data_item_class_id, data_item_type_id,
                                                            data_item_type_name, track_item_update_id)
 
-            data_item_obj.insert_struct(data_item_dict)
+            if insert:
+                data_item_obj.insert_struct(data_item_dict)
+            else:
+                result_cache += [data_item_dict]
+
+        return result_cache
 
     def _generate_data_item_dict(self, cursor, data_item_class_id, data_item_type_id, data_item_type_name,
                                  track_item_update_id):
@@ -170,6 +180,9 @@ class MemoryBoxRunner(object):
         query_template_obj = QueryTemplates(self.connection, self.meta_data)
         track_item_obj = TrackItems(self.connection, self.meta_data)
         track_item_update_obj = TrackItemUpdates(self.connection, self.meta_data)
+        data_item_obj = DataItems(self.connection, self.meta_data)
+        state_obj = States(self.connection, self.meta_data)
+        data_item_type_obj = DataItemTypes(self.connection, self.meta_data)
 
         transitions = transition_state_obj.find_transitions_for_memory_box(self.memory_box, item_class_name)
 
@@ -220,15 +233,50 @@ class MemoryBoxRunner(object):
                 for row in cursor:
                     transaction_id = row.transaction_id
                     track_item_id = row.id
-                    state_id = row.state_id
 
-                    cursor = track_item_update_obj.find_latest_update(track_item_id, state_id)
+                    state_to_compare_to = parameters["state_to_compare_to"]
+
+                    state_dict = state_obj.find_by_name(state_to_compare_to)
+
+                    state_id_to_compare = state_dict["id"]
+
+                    cursor = track_item_update_obj.find_latest_update(track_item_id, state_id_to_compare)
                     latest_track_item_update_id = list(cursor)[0][0]
 
                     # For each data item check if it has changed
                     track_item_update_dict = track_item_update_obj.find_by_id(latest_track_item_update_id)
 
-                    print(track_item_dict)
+                    data_items_cursor = data_item_obj.find_by_track_item_update_id(latest_track_item_update_id)
+                    has_changed = 0
+
+                    past_data_items_to_compare = list(data_items_cursor)
+                    current_data_items_to_compare = self._update_data_items(track_item_id, to_state_id, data_item_transitions_to_process, insert=False)
+
+                    past_data_item_sha1_dict = {}
+                    for past_data_item in past_data_items_to_compare:
+                        past_data_item_sha1_dict[past_data_item["data_item_type_id"]] = past_data_item["sha1"]
+
+                    current_data_item_sha1_dict = {}
+                    for current_data_item in current_data_items_to_compare:
+                        current_data_item_sha1_dict[current_data_item["data_item_type_id"]] = current_data_item["sha1"]
+
+                    has_changed = False  # Here we compare if the current data items have changed
+                    for key in current_data_item_sha1_dict:
+                        current_sha1 = current_data_item_sha1_dict[key]
+                        past_sha1 = past_data_item_sha1_dict[key]
+
+                        if current_sha1 != past_sha1:
+                            has_changed = True
+
+                    if has_changed:  # If it has changed we commit the changes and update the state
+                        print("")
+                        print(past_data_items_to_compare)
+                        print(current_data_items_to_compare)
+                        print("")
+                        for current_data_item in current_data_items_to_compare:
+                            data_item_obj.insert_struct(current_data_item)
+                        track_item_obj.update_struct(track_item_id, {"state_id": to_state_id})
+
 
             else:  # Handle other transitions by trigger or time elapsed / age out
 
@@ -239,6 +287,7 @@ class MemoryBoxRunner(object):
                                                                        **query_parameters)
                         for row in source_cursor:
                             transaction_id_dict[str(row.transaction_id)] = 1
+
 
                 elif action_name == "Aged out":  # Update if the items have changed
                     pass
@@ -261,3 +310,4 @@ class MemoryBoxRunner(object):
                     if data_item_updates:
                         self._update_data_items(track_item_id, to_state_id, data_item_transitions_to_process)
                         track_item_obj.update_struct(track_item_id, {"state_id": to_state_id})
+

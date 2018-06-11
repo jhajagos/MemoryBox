@@ -68,12 +68,12 @@ class RunMemoryBox(unittest.TestCase):
         self.assertTrue(len(list(cursor2)))
 
         self.source_connection.execute("delete from encounter_documents")
-        self.source_connection.execute("delete from encounters")
+        #self.source_connection.execute("delete from encounters")
 
-        self.number_of_second_encounters = load_csv_into_database("encounters",
-                                                                  "./files/encounters_second_batch.csv",
-                                                                  self.source_connection, self.source_meta_data
-                                                                  )
+        # self.number_of_second_encounters = load_csv_into_database("encounters",
+        #                                                           "./files/encounters_second_batch.csv",
+        #                                                           self.source_connection, self.source_meta_data
+        #                                                           )
 
         self.number_of_second_documents = load_csv_into_database("encounter_documents",
                                                                   "./files/encounter_documents_second_batch.csv",

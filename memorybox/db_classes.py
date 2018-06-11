@@ -41,6 +41,15 @@ class DBClass(object):
     def find_by_sql(self, sql_query):
         return list(self.connection.execute(sql_query))
 
+    def _find_by_name(self, name):
+        find_expr = self.table_obj.select().where(self.table_obj.columns["name"] == name)
+        cursor = self.connection.execute(find_expr)
+        cursor_result = list(cursor)
+        if len(cursor_result):
+            return cursor_result[0]
+        else:
+            return None
+
 
 class DBClassName(DBClass):
     """Base class for working with table name"""
@@ -68,17 +77,10 @@ class DBClassName(DBClass):
     def get_id(self):
         return self.name_obj.id
 
-    def _find_by_name(self, name):
-        find_expr = self.table_obj.select().where(self.table_obj.columns["name"] == name)
-        cursor = self.connection.execute(find_expr)
-        cursor_result = list(cursor)
-        if len(cursor_result):
-            return cursor_result[0]
-        else:
-            return None
-
     def _insert_name(self, name):
         self.connection.execute(self.table_obj.insert({"name": name}))
+
+
 
 
 class Actions(DBClass):
@@ -89,6 +91,9 @@ class Actions(DBClass):
 class States(DBClass):
     def _table_name(self):
         return "states"
+
+    def find_by_name(self, name):
+        return self._find_by_name(name)
 
 
 class DataConnectionTypes(DBClass):
@@ -114,6 +119,16 @@ class MemoryBoxes(DBClass):
 class DataItems(DBClass):
     def _table_name(self):
         return "data_items"
+
+    def find_by_track_item_update_id(self, track_item_update_id):
+
+        sql_query_dict = {"schema": self.meta_data.schema, "track_item_update_id": track_item_update_id}
+
+        cursor = self.connection.execute("""select * from %(schema)s.data_items 
+                                             where track_item_update_id = %(track_item_update_id)s""" % sql_query_dict)
+
+        return cursor
+
 
 
 class DataItemClasses(DBClass):
