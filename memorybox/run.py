@@ -231,10 +231,10 @@ class MemoryBoxRunner(object):
 
                 cursor = track_item_obj.find_by_from_state_id(from_state_id, item_class_id)
                 for row in cursor:
-                    transaction_id = row.transaction_id
-                    track_item_id = row.id
 
+                    track_item_id = row.id
                     state_to_compare_to = parameters["state_to_compare_to"]
+                    latest_track_item_update_id = None
 
                     if state_to_compare_to.__class__ == [].__class__:  # We need to provide a precedence list for states
                         state_ids_to_compare_to = []
@@ -253,45 +253,48 @@ class MemoryBoxRunner(object):
                         c_state_id_to_compare_to = state_ids_to_compare_to[i]
                         cursor = track_item_update_obj.find_latest_update(track_item_id, c_state_id_to_compare_to)
                         result_list = list(cursor)
+
                         if len(result_list):
                             latest_track_item_update_id = result_list[0][0]
+                            break
+
+                        if len(result_list) == i + 1:
                             break
 
                         i += 1
 
                     # For each data item check if it has changed
+                    if latest_track_item_update_id is not None:
+                        data_items_cursor = data_item_obj.find_by_track_item_update_id(latest_track_item_update_id)
 
-                    data_items_cursor = data_item_obj.find_by_track_item_update_id(latest_track_item_update_id)
+                        past_data_items_to_compare = list(data_items_cursor)
 
-                    past_data_items_to_compare = list(data_items_cursor)
+                        current_data_items_to_compare = self._update_data_items(track_item_id, to_state_id,
+                                                                                data_item_transitions_to_process,
+                                                                                insert=False)
 
-                    current_data_items_to_compare = self._update_data_items(track_item_id, to_state_id,
-                                                                            data_item_transitions_to_process,
-                                                                            insert=False)
+                        past_data_item_sha1_dict = {}
+                        for past_data_item in past_data_items_to_compare:
+                            past_data_item_sha1_dict[past_data_item["data_item_class_id"]] = past_data_item["sha1"]
 
-                    past_data_item_sha1_dict = {}
-                    for past_data_item in past_data_items_to_compare:
-                        past_data_item_sha1_dict[past_data_item["data_item_type_id"]] = past_data_item["sha1"]
-
-                    current_data_item_sha1_dict = {}
-                    for current_data_item in current_data_items_to_compare:
-                        current_data_item_sha1_dict[current_data_item["data_item_type_id"]] = current_data_item["sha1"]
-
-                    has_changed = False  # Here we compare if the current data items have changed
-
-                    for key in current_data_item_sha1_dict:
-                        current_sha1 = current_data_item_sha1_dict[key]
-
-                        past_sha1 = past_data_item_sha1_dict[key]
-
-                        if current_sha1 != past_sha1:
-                            has_changed = True
-
-                    if has_changed:  # If it has changed we commit the changes and update the state
-
+                        current_data_item_sha1_dict = {}
                         for current_data_item in current_data_items_to_compare:
-                            data_item_obj.insert_struct(current_data_item)
-                        track_item_obj.update_struct(track_item_id, {"state_id": to_state_id, "updated_at": datetime.datetime.utcnow()})
+                            current_data_item_sha1_dict[current_data_item["data_item_class_id"]] = current_data_item["sha1"]
+
+                        has_changed = False  # Here we compare if the current data items have changed
+
+                        for key in current_data_item_sha1_dict:
+                            current_sha1 = current_data_item_sha1_dict[key]
+                            past_sha1 = past_data_item_sha1_dict[key]
+
+                            if current_sha1 != past_sha1:
+                                has_changed = True
+
+                        if has_changed:  # If it has changed we commit the changes and update the state
+
+                            for current_data_item in current_data_items_to_compare:
+                                data_item_obj.insert_struct(current_data_item)
+                            track_item_obj.update_struct(track_item_id, {"state_id": to_state_id, "updated_at": datetime.datetime.utcnow()})
 
 
             else:  # Handle other transitions by trigger or time elapsed / age out
