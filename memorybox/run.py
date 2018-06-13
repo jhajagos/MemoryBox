@@ -120,6 +120,8 @@ class MemoryBoxRunner(object):
 
         if insert:
             track_item_update_id = track_item_update_obj.insert_struct(track_item_update_struct)
+        else:
+            track_item_update_id = None  # User needs to manually update
 
         for data_item_action in data_item_actions:
 
@@ -293,8 +295,17 @@ class MemoryBoxRunner(object):
 
                         if has_changed:  # If it has changed we commit the changes and update the state
 
+                            track_item_update_struct = {"track_item_id": track_item_id,
+                                                        "state_id": to_state_id,
+                                                        "created_at": datetime.datetime.utcnow()
+                                                        }
+
+                            track_item_update_id = track_item_update_obj.insert_struct(track_item_update_struct)
+
                             for current_data_item in current_data_items_to_compare:
+                                current_data_item["track_item_update_id"] = track_item_update_id
                                 data_item_obj.insert_struct(current_data_item)
+
                             track_item_obj.update_struct(track_item_id, {"state_id": to_state_id, "updated_at": datetime.datetime.utcnow()})
 
 
