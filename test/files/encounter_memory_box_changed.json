@@ -11,6 +11,24 @@
        "transitions":
         [
           {
+            "from": "New",
+            "to": "Watch",
+            "query_template": null,
+            "action": "Pass",
+            "parameters": {},
+            "defaults": {},
+            "actions": []
+          },
+          {
+            "from": "Changed",
+            "to": "Watch",
+            "query_template": null,
+            "action": "Pass",
+            "defaults": {},
+            "parameters": {},
+            "actions": []
+          },
+          {
             "from": null,
             "to": "New",
             "query_template": "discharge_query",
@@ -62,25 +80,8 @@
                 "data_item_class": "encounter_document"
               }
             ]
-          },
-          {
-            "from": "New",
-            "to": "Watch",
-            "query_template": null,
-            "action": "Pass",
-            "parameters": {},
-            "defaults": {},
-            "actions": []
-          },
-          {
-            "from": "Changed",
-            "to": "Watch",
-            "query_template": null,
-            "action": "Pass",
-            "defaults": {},
-            "parameters": {},
-            "actions": []
           }
+
         ],
         "data_items": {
           "classes": [
