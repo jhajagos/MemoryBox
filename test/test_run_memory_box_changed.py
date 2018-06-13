@@ -100,6 +100,8 @@ class RunMemoryBox(unittest.TestCase):
 
         self.memory_box_runner.run("discharges")
 
+        self.memory_box_runner.run("discharges")
+
 
 if __name__ == '__main__':
 

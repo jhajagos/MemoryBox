@@ -118,7 +118,8 @@ class MemoryBoxRunner(object):
                                     "created_at": datetime.datetime.utcnow()
                                     }
 
-        track_item_update_id = track_item_update_obj.insert_struct(track_item_update_struct)
+        if insert:
+            track_item_update_id = track_item_update_obj.insert_struct(track_item_update_struct)
 
         for data_item_action in data_item_actions:
 
