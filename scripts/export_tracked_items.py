@@ -82,7 +82,7 @@ def main(connection, meta_data, memory_box_name, item_class_name, data_item_clas
                 if append_metadata_fields:
                     data_row[header.index("_current_state_name")] = row.current_state_name
                     data_row[header.index("_data_state_name")] = row.data_state_name
-                    data_row[header.index("_data_item_class_name")] = row.current_state_name
+                    data_row[header.index("_data_item_class_name")] = row.data_item_class_name
                     data_row[header.index("_position")] = str(i + 1)
                     data_row[header.index("_created_at")] = str(row.updated_at)
                     data_row[header.index("_updated_at")] = str(row.created_at)
