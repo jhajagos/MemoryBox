@@ -5,7 +5,9 @@ create table encounters (encounter_number int,
   admit_date_time datetime,
   discharge_date_time datetime,
   admit_type varchar(64),
-  admit_source varchar(64));
+  admit_source varchar(64),
+  updated_at datetime
+  );
 
 
 create table encounter_dx (encounter_number int,

@@ -125,7 +125,15 @@ class MemoryBoxRunner(object):
 
         for data_item_action in data_item_actions:
 
-            query_parameters = data_item_action.parameters
+            parameters = data_item_action.parameters
+            if "fields_to_exclude" in parameters:
+                fields_to_exclude = parameters["fields_to_exclude"]
+                parameters.pop("fields_to_exclude")
+                query_parameters = parameters
+            else:
+                fields_to_exclude = None
+                query_parameters = parameters
+
             query_parameter_list = data_item_action.query_parameter_list
             query_template = data_item_action.query_template
 
@@ -138,7 +146,7 @@ class MemoryBoxRunner(object):
             cursor = self.source_connection.execute(query_template, **query_parameters)
 
             data_item_dict = self._generate_data_item_dict(cursor, data_item_class_id, data_item_type_id,
-                                                           data_item_type_name, track_item_update_id)
+                                                           data_item_type_name, track_item_update_id, fields_to_exclude)
 
             if insert:
                 data_item_obj.insert_struct(data_item_dict)
@@ -148,7 +156,7 @@ class MemoryBoxRunner(object):
         return result_cache
 
     def _generate_data_item_dict(self, cursor, data_item_class_id, data_item_type_id, data_item_type_name,
-                                 track_item_update_id):
+                                 track_item_update_id, fields_to_exclude_from_hash=None):
 
         data_item_dict = {"data_item_class_id": data_item_class_id,
                           "data_item_type_id": data_item_type_id,
@@ -161,7 +169,21 @@ class MemoryBoxRunner(object):
                 data += [self._convert_row_to_json(row)]
             data_item_dict["data"] = data
 
-            hash_value = hashlib.sha1(json.dumps(data)).hexdigest()
+            if fields_to_exclude_from_hash is not None:
+
+                data_copy = json.loads(json.dumps(data))
+
+                for row in data_copy:
+                    for field_to_exclude in fields_to_exclude_from_hash:
+                        if field_to_exclude in row:
+                            row[field_to_exclude] = None
+                json_data = json.dumps(data_copy)
+
+            else:
+                json_data = json.dumps(data)
+
+
+            hash_value = hashlib.sha1(json_data).hexdigest()
 
         elif data_item_type_name == "Text":
             text_str = ""

@@ -25,7 +25,7 @@ class RunMemoryBox(unittest.TestCase):
 
         self.number_of_initial_encounters = load_csv_into_database("encounters",
                                                                    "./files/encounters_first_batch.csv",
-                                                                   source_connection, source_meta_data)
+                                                                   source_connection, source_meta_data, "updated_at")
         self.number_of_initial_encounter_dx = load_csv_into_database("encounter_dx",
                                                                      "./files/encounter_dx_first_batch.csv",
                                                                      source_connection, source_meta_data)
@@ -49,7 +49,7 @@ class RunMemoryBox(unittest.TestCase):
 
             self.data_connections = config["data_connections"]
 
-            schema_define.create_and_populate_schema(self.connection, self.meta_data, )
+            schema_define.create_and_populate_schema(self.connection, self.meta_data)
 
         with open("./files/encounter_memory_box_changed.json") as f:
             self.memory_box_struct = json.load(f)
@@ -72,7 +72,8 @@ class RunMemoryBox(unittest.TestCase):
 
         self.number_of_second_encounters = load_csv_into_database("encounters",
                                                                   "./files/encounters_second_batch.csv",
-                                                                  self.source_connection, self.source_meta_data
+                                                                  self.source_connection, self.source_meta_data,
+                                                                  "updated_at"
                                                                   )
 
         self.number_of_second_documents = load_csv_into_database("encounter_documents",
@@ -87,7 +88,9 @@ class RunMemoryBox(unittest.TestCase):
 
         self.number_of_third_encounters = load_csv_into_database("encounters",
                                                                  "./files/encounters_third_batch.csv",
-                                                                 self.source_connection, self.source_meta_data)
+                                                                 self.source_connection, self.source_meta_data,
+                                                                 "updated_at"
+                                                                 )
 
         self.number_of_third_documents = load_csv_into_database("encounter_documents",
                                                                  "./files/encounter_documents_third_batch.csv",

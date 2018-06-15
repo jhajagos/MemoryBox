@@ -14,7 +14,7 @@ def create_schema_test_database(connection_string, schema_sql):
     return connection, meta_data
 
 
-def load_csv_into_database(table_name, csv_file_name, connection, meta_data):
+def load_csv_into_database(table_name, csv_file_name, connection, meta_data, timestamp_field=None):
     table_obj = meta_data.tables[table_name]
 
     date_time_fields_dict = {}
@@ -38,6 +38,10 @@ def load_csv_into_database(table_name, csv_file_name, connection, meta_data):
                         row_dict[column] = datetime.datetime.strptime(row_dict[column], "%Y-%m-%d")
                 elif not len(row_dict[column]):
                     row_dict[column] = None
+
+            if timestamp_field is not None:
+                row_dict[timestamp_field] = datetime.datetime.now()
+
             connection.execute(table_obj.insert(row_dict))
             i += 1
 

@@ -91,7 +91,7 @@
                 {
                   "name": "Insert",
                   "query_template": "encounter_detail_query",
-                  "parameters": {"encounter_number": "_transaction_id"}
+                  "parameters": {"encounter_number": "_transaction_id", "fields_to_exclude": ["updated_at"]}
                 }
               ]
             },
