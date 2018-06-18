@@ -177,11 +177,10 @@ class MemoryBoxRunner(object):
                     for field_to_exclude in fields_to_exclude_from_hash:
                         if field_to_exclude in row:
                             row[field_to_exclude] = None
-                json_data = json.dumps(data_copy)
+                json_data = json.dumps(data_copy, sort_keys=True)
 
             else:
-                json_data = json.dumps(data)
-
+                json_data = json.dumps(data, sort_keys=True)
 
             hash_value = hashlib.sha1(json_data).hexdigest()
 
