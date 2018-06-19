@@ -20,7 +20,7 @@ def main(connection, meta_data, memory_box_name, item_class_name, data_item_clas
     schema_dict = {"schema": meta_data.schema, "look_back_until_date": look_back_until_date}
 
     query_string = """select ti.id as track_item_id, ti.item_class_id, ti.transaction_id, tiu.state_id,
-    tiu.id as track_item_update_id 
+    tiu.id as track_item_update_id, 
     s1.name as data_state_name, s2.name as current_state_name,
     di.id as data_item_id, di.data_item_class_id, dic.name as data_item_class_name, data, ti.updated_at, ti.created_at,
     di.sha1
