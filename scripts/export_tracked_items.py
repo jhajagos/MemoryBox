@@ -92,7 +92,7 @@ def main(connection, meta_data, memory_box_name, item_class_name, data_item_clas
                     data_row[header.index("_updated_at")] = str(row.created_at)
                     data_row[header.index("_track_item_id")] = str(row.track_item_id)
                     data_row[header.index("_track_item_update_id")] = str(row.track_item_update_id)
-                    data_row[header.index("_data_item_id")] = str(row.date_item_id)
+                    data_row[header.index("_data_item_id")] = str(row.data_item_id)
                     data_row[header.index("_data_sha1")] = str(row.sha1)
 
                 csv_writer.writerow(data_row)
