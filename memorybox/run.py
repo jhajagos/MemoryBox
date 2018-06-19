@@ -128,7 +128,7 @@ class MemoryBoxRunner(object):
             parameters = data_item_action.parameters
             if "fields_to_exclude" in parameters:
                 fields_to_exclude = parameters["fields_to_exclude"]
-                parameters.pop("fields_to_exclude")
+                # parameters.pop("fields_to_exclude")
                 query_parameters = parameters
             else:
                 fields_to_exclude = None
