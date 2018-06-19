@@ -19,9 +19,11 @@ def main(connection, meta_data, memory_box_name, item_class_name, data_item_clas
 
     schema_dict = {"schema": meta_data.schema, "look_back_until_date": look_back_until_date}
 
-    query_string = """select ti.id as track_item_id, ti.item_class_id, ti.transaction_id, tiu.state_id, 
+    query_string = """select ti.id as track_item_id, ti.item_class_id, ti.transaction_id, tiu.state_id,
+    tiu.id as track_item_update_id 
     s1.name as data_state_name, s2.name as current_state_name,
-    di.id as data_item_id, di.data_item_class_id, dic.name as data_item_class_name, data, ti.updated_at, ti.created_at
+    di.id as data_item_id, di.data_item_class_id, dic.name as data_item_class_name, data, ti.updated_at, ti.created_at,
+    di.sha1
   from %(schema)s.track_items ti 
   join %(schema)s.item_classes ic on ic.id = ti.item_class_id
   join %(schema)s.memory_boxes mb on mb.id = ic.memory_box_id
@@ -63,7 +65,9 @@ def main(connection, meta_data, memory_box_name, item_class_name, data_item_clas
     header = field_list
 
     if append_metadata_fields:
-        header += ["_current_state_name", "_data_state_name", "_data_item_class_name", "_position", "_created_at", "_updated_at"]
+        header += ["_current_state_name", "_data_state_name", "_data_item_class_name", "_position",
+                   "_created_at", "_updated_at",
+                   "_track_item_id", "_track_item_update_id", "_data_item_id", "_data_sha1"]
 
 
     with open(file_name, 'wb') as fw:
@@ -86,6 +90,10 @@ def main(connection, meta_data, memory_box_name, item_class_name, data_item_clas
                     data_row[header.index("_position")] = str(i + 1)
                     data_row[header.index("_created_at")] = str(row.updated_at)
                     data_row[header.index("_updated_at")] = str(row.created_at)
+                    data_row[header.index("_track_item_id")] = str(row.track_item_id)
+                    data_row[header.index("_track_item_update_id")] = str(row.track_item_update_id)
+                    data_row[header.index("_data_item_id")] = str(row.date_item_id)
+                    data_row[header.index("_data_sha1")] = str(row.sha1)
 
                 csv_writer.writerow(data_row)
                 i += 1
