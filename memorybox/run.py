@@ -173,10 +173,10 @@ class MemoryBoxRunner(object):
 
                 data_copy = json.loads(json.dumps(data))
 
-                for row in data_copy:
+                for data_row in data_copy:
                     for field_to_exclude in fields_to_exclude_from_hash:
-                        if field_to_exclude in row:
-                            row[field_to_exclude] = None
+                        if field_to_exclude in data_row:
+                            data_row[field_to_exclude] = None
                 json_data = json.dumps(data_copy, sort_keys=True)
 
             else:
