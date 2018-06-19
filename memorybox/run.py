@@ -128,7 +128,6 @@ class MemoryBoxRunner(object):
             parameters = data_item_action.parameters
             if "fields_to_exclude" in parameters:
                 fields_to_exclude = parameters["fields_to_exclude"]
-                # parameters.pop("fields_to_exclude")
                 query_parameters = parameters
             else:
                 fields_to_exclude = None
@@ -177,15 +176,12 @@ class MemoryBoxRunner(object):
                     for field_to_exclude in fields_to_exclude_from_hash:
                         if field_to_exclude in data_row:
                             data_row[field_to_exclude] = None
-                print(data_copy)
-                json_data = json.dumps(data_copy, sort_keys=True)
-                print(json_data)
 
+                json_data = json.dumps(data_copy, sort_keys=True)
             else:
                 json_data = json.dumps(data, sort_keys=True)
 
             hash_value = hashlib.sha1(json_data).hexdigest()
-            print(hash_value)
 
         elif data_item_type_name == "Text":
             text_str = ""
@@ -380,10 +376,7 @@ class MemoryBoxRunner(object):
                         raise(RuntimeError)
 
                     cursor = track_item_obj.find_by_from_state_id(from_state_id, item_class_id)
-                    # print(from_state_id, item_class_id)
                     transaction_id_dict = {}
-                    # import pprint
-                    # pprint.pprint(list(self.connection.execute("select * from %s.track_items" % self.meta_data.schema)))
 
                     for row in cursor:
 
@@ -391,7 +384,6 @@ class MemoryBoxRunner(object):
                         current_age = current_utc_time - row.created_at
 
                         if current_age > age_out_time_delta:
-                            # print(current_age)
                             transaction_id_dict[str(row.transaction_id)] = 1
 
                 else:
