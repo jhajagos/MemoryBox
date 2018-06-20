@@ -10,6 +10,28 @@ import time
 
 class RunMemoryBox(unittest.TestCase):
 
+    def _get_changes_track_id(self):
+        q = """
+            select 
+      tiu.track_item_id, tiu.id as track_item_update_id,
+      tiu.state_id, s.name as state_name, tiu.created_at from %s.track_item_updates tiu join %s.states s on s.id = tiu.state_id
+    order by track_item_id, tiu.id;
+            """ % (self.meta_data.schema, self.meta_data.schema)
+
+        cursor = self.connection.execute(q)
+        results = list(cursor)
+
+        track_dict = {}
+        for row in results:
+            track_item_id = row.track_item_id
+            state_name = row.state_name
+            if track_item_id not in track_dict:
+                track_dict[track_item_id] = [state_name]
+            else:
+                track_dict[track_item_id] += [state_name]
+
+        return track_dict
+
     def setUp(self):
 
         # Setup a source database to test the functionality of tracking items in a changing database
@@ -56,6 +78,7 @@ class RunMemoryBox(unittest.TestCase):
             self.mbox_load_obj = MemoryBoxLoader(self.memory_box_struct, self.connection, self.meta_data)
             self.mbox_load_obj.load_into_db()
 
+
     def test_run_memory_box(self):
         self.memory_box_runner = MemoryBoxRunner("encounter", self.connection, self.meta_data, self.data_connections)
 
@@ -80,7 +103,6 @@ class RunMemoryBox(unittest.TestCase):
                                                                  "./files/encounter_documents_second_batch.csv",
                                                                  self.source_connection, self.source_meta_data
                                                                  )
-
         self.memory_box_runner.run("discharges")
 
         self.source_connection.execute("delete from encounters")
@@ -104,6 +126,22 @@ class RunMemoryBox(unittest.TestCase):
         self.memory_box_runner.run("discharges")
 
         self.memory_box_runner.run("discharges")
+
+        tracks_dict = self._get_changes_track_id()
+
+        self.assertEquals(4, len(tracks_dict))
+
+        track_1 = tracks_dict[1]
+        track_2 = tracks_dict[2]
+        track_3 = tracks_dict[3]
+        track_4 = tracks_dict[4]
+
+        self.assertEqual(u"New", track_1[0])
+        self.assertEqual(u"Archive", track_1[0])
+
+        self.assertEqual(u"New", track_4[0]) # Test for timeout
+        self.assertEqual(u"Archive", track_4[0])
+
 
 
 if __name__ == '__main__':
