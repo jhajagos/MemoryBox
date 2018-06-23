@@ -177,9 +177,11 @@ class MemoryBoxRunner(object):
                         if field_to_exclude in data_row:
                             data_row[field_to_exclude] = None
 
+                data_item_dict["data_for_diff"] = data_copy
                 json_data = json.dumps(data_copy, sort_keys=True)
             else:
                 json_data = json.dumps(data, sort_keys=True)
+                data_item_dict["data_for_diff"] = data
 
             hash_value = hashlib.sha1(json_data).hexdigest()
 
@@ -205,6 +207,7 @@ class MemoryBoxRunner(object):
         track_item_obj = TrackItems(self.connection, self.meta_data)
         track_item_update_obj = TrackItemUpdates(self.connection, self.meta_data)
         data_item_obj = DataItems(self.connection, self.meta_data)
+        changed_data_item_obj = ChangedDataItems(self.connection, self.meta_data)
         state_obj = States(self.connection, self.meta_data)
 
         transitions = transition_state_obj.find_transitions_for_memory_box(self.memory_box, item_class_name)
@@ -297,8 +300,10 @@ class MemoryBoxRunner(object):
                                                                                 insert=False)
 
                         past_data_item_sha1_dict = {}
+                        past_data_item_id_dict = {}
                         for past_data_item in past_data_items_to_compare:
                             past_data_item_sha1_dict[past_data_item["data_item_class_id"]] = past_data_item["sha1"]
+                            past_data_item_id_dict[past_data_item["data_item_class_id"]] = past_data_item["id"]
 
                         current_data_item_sha1_dict = {}
                         for current_data_item in current_data_items_to_compare:
@@ -324,7 +329,24 @@ class MemoryBoxRunner(object):
 
                             for current_data_item in current_data_items_to_compare:
                                 current_data_item["track_item_update_id"] = track_item_update_id
-                                data_item_obj.insert_struct(current_data_item)
+
+                                new_data_item_id = data_item_obj.insert_struct(current_data_item) # Insert new data item
+
+                                current_data_item_class_id = current_data_item["data_item_class_id"]
+
+                                current_sha1 = current_data_item_sha1_dict[current_data_item_class_id]
+                                past_sha1 = past_data_item_sha1_dict[current_data_item_class_id]
+
+                                if current_sha1 != past_sha1: # Only insert data items which have changed
+                                    past_data_item_id = past_data_item_id_dict[current_data_item_class_id]
+
+                                    changed_data_item_struct = {
+                                        "initial_data_item_id": past_data_item_id,
+                                        "changed_data_item_id": new_data_item_id,
+                                        "created_at": datetime.datetime.utcnow()
+                                    }
+
+                                    changed_data_item_obj.insert_struct(changed_data_item_struct)
 
                             track_item_obj.update_struct(track_item_id, {"state_id": to_state_id, "updated_at": datetime.datetime.utcnow()})
 

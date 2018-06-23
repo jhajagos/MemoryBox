@@ -32,6 +32,30 @@ class RunMemoryBox(unittest.TestCase):
 
         return track_dict
 
+    def _get_changes(self):
+
+        schem_dict = {"schema": self.meta_data.schema}
+
+        q = """
+        
+select cdi.*, dic.name as data_item_class_name, d1.track_item_update_id, track_item_id, ti.transaction_id,
+  d1.sha1 as initial_sha1, d2.sha1, d1.data_for_diff as initial_data_for_diff, 
+  d2.data_for_diff, d1.text as initial_text, d2.text, ic.name as item_class_name, mb.name as memory_box_name
+from 
+  %(schema)s.changed_data_items cdi 
+  join %(schema)s.data_items d1 on d1.id = cdi.initial_data_item_id
+  join %(schema)s.data_items d2 on d2.id = cdi.changed_data_item_id
+  join %(schema)s.data_item_classes dic on d1.data_item_class_id = dic.id
+  join %(schema)s.track_item_updates tiu on d1.track_item_update_id = tiu.id
+  join %(schema)s.track_items ti on ti.id = tiu.track_item_id
+  join %(schema)s.item_classes ic on ic.id = ti.item_class_id
+  join %(schema)s.memory_boxes mb on mb.id = ic.memory_box_id
+        """ % schem_dict
+
+        c = self.connection.execute(q)
+        return list(c)
+
+
     def setUp(self):
 
         # Setup a source database to test the functionality of tracking items in a changing database
@@ -137,11 +161,14 @@ class RunMemoryBox(unittest.TestCase):
         track_4 = tracks_dict[4]
 
         self.assertEqual(u"New", track_1[0])
-        self.assertEqual(u"Archive", track_1[0])
+        self.assertEqual(u"Archive", track_1[-1])
 
         self.assertEqual(u"New", track_4[0]) # Test for timeout
-        self.assertEqual(u"Archive", track_4[0])
+        self.assertEqual(u"Archive", track_4[-1])
 
+        changes = self._get_changes()
+
+        self.assertNotEqual(0, len(changes))
 
 
 if __name__ == '__main__':

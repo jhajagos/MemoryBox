@@ -81,8 +81,6 @@ class DBClassName(DBClass):
         self.connection.execute(self.table_obj.insert({"name": name}))
 
 
-
-
 class Actions(DBClass):
     def _table_name(self):
         return "actions"
@@ -130,6 +128,10 @@ class DataItems(DBClass):
         return cursor
 
 
+class ChangedDataItems(DBClass):
+
+    def _table_name(self):
+        return "changed_data_items"
 
 class DataItemClasses(DBClass):
     def _table_name(self):

@@ -90,6 +90,7 @@ def schema_define(meta_data):
     data_items = Table("data_items", meta_data,
                        Column("id", Integer, primary_key=True),
                        Column("data", JSONB),
+                       Column("data_for_diff", JSONB), # Fields that changed nulled out
                        Column("text", Text),
                        Column("base64_binary_file_content", Text),
                        Column("sha1", Text),
@@ -97,6 +98,13 @@ def schema_define(meta_data):
                        Column("data_item_type_id", ForeignKey("data_item_types.id")),
                        Column("track_item_update_id", ForeignKey("track_item_updates.id")),
                        Column("created_at", DateTime))
+
+    changed_data_items = Table("changed_data_items", meta_data,
+                                  Column("id",  Integer, primary_key=True),
+                                  Column("initial_data_item_id", ForeignKey("data_items.id")),
+                                  Column("changed_data_item_id", ForeignKey("data_items.id")),
+                                  Column("created_at", DateTime)
+                                  )
 
     return meta_data
 
