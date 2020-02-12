@@ -67,7 +67,7 @@ class MemoryBoxRunner(object):
 
         for column in row_data.keys():
             data_value = row_data[column]
-            if data_value.__class__  in (int, float):
+            if data_value.__class__ in (int, float):
                 row_dict[column] = data_value
             else:
                 string_value = str(data_value)
