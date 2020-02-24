@@ -136,7 +136,7 @@ if __name__ == "__main__":
 
     config_json_filename = arg_obj.config_json_filename
     if not os.path.exists(config_json_filename):
-        raise IOError, "Configuration file: '%s' does not exist" % config_json_filename
+        raise IOError("Configuration file: '%s' does not exist" % config_json_filename)
 
     with open(config_json_filename, "r") as f:
         config_dict = json.load(f)
